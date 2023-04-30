@@ -24,12 +24,20 @@
 <script>
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+import{mapState}from 'vuex'
+
 export default {
   name: 'App',
   data(){
     return{
       fullname: null,
     };
+  },
+    computed:{
+    ...mapState(['fullname']),
+    isLogin(){
+      return !!localStorage.getItem('token');
+    }
   },
   mounted() {
     import('bootstrap/dist/js/bootstrap.bundle.min.js').then(() => {

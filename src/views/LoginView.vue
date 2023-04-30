@@ -26,6 +26,8 @@
 
 <script>
 import Swal from 'sweetalert2'
+import {mapMutations}from 'vuex'
+
 export default({
     data(){
         return{
@@ -36,6 +38,7 @@ export default({
         }
     },
     methods:{
+        ...mapMutations(['setFullname']),
        async login(){
         const params = new URLSearchParams();
         params.append('grant_type', 'password');
@@ -64,6 +67,7 @@ export default({
             document.cookie = "isLogin=true; max-age=86400 ; path=/";
             document.cookie = `fullname=${fullname}; max-age=86400 ; path=/`;
             this.fullname = fullname;
+            this.setFullName(fullname);
             this.isLogin = true;
             this.username= '' ;
             this.password= '' ;

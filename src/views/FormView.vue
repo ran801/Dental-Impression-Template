@@ -122,7 +122,7 @@ export default ({
     },
     methods:{
         submit(){
-            console.log()
+            // not yet
         }
     }
 })

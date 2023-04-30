@@ -9,7 +9,7 @@ import ClosedView from '../views/ClosedView.vue'
 import ModifyView from '../views/ModifyView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import Register_techView from '../views/Register_techView.vue'
-// import FormView from '../views/FormView.vue'
+import FormView from '../views/FormView.vue'
 
 import FindNoPage from '../views/FindNoPage.vue'
 
@@ -70,11 +70,11 @@ const routes = [
     name:"Register_techView",
     component: Register_techView
   },
-  // {
-  //   path:"/form",
-  //   name:"FormView",
-  //   component: FormView
-  // },
+  {
+    path:"/form",
+    name:"FormView",
+    component: FormView
+  },
   {
     path:"/:pathMatch(.*)*",
     name:"FindNoPage",

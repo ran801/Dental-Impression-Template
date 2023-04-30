@@ -46,11 +46,11 @@ methods: {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              "personnelNumber": this.username,
-              "username": this.name,
-              'password': 'u$erP@ssWd',
-              'role': 'dentist',
-              'facilityId': 2,
+            "personnelNumber": "A0002",
+            "username": "黃技師", 
+            "password": "4dm1nP@s2Wd", 
+            "role": "admin",
+            "facilityId": 1 ,
             })
           });
           const data = await response.json();

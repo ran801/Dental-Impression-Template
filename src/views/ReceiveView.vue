@@ -33,8 +33,7 @@
         </table>
         <div class="div1">
             <form style="position: relative; left: 700px; top: 100px;">
-                <input type="button" value="掃描" class="btn3" @click="receive_scan()">              
-                <input type="button" value="測試" class="btn3" @click="test()">
+                <input type="button" value="掃描" class="btn3" @click="receive_scan()">   
                 <div class="txt" id="ntag">{{ntag}}</div>
                 <div class="txt" id="ntag2">{{ntag2}}</div>
             </form>
@@ -93,16 +92,14 @@ export default({
             receivedDate:'',
             appointmentDate:'',
             dataList:[],
-            //確認token(很重要)!!
+            
             token:`Bearer `+ this.$root.$accessToken 
         }
     },
     mounted(){  
-        const callback = async() => {
-            await this.$refresh(110, callback); 
-        };
-        this.$refresh(110, callback);
-},
+        this.$root.$refreshT();
+
+    },
     methods:{
         formatDate(dataTime){
         const date = new Date(dataTime);
@@ -171,13 +168,14 @@ export default({
 
 
                         //impressions沒有對應的stage資料，確認這部分要做什麼
-                        const r4 = await fetch(this.$root.$host+`/api/impressions/${id}`,{
+                        const r4 = await fetch(this.$root.$host+`/api/impressions/${id}/transferRecords`,{
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
                                 "Authorization": this.token
                             },
                             body: JSON.stringify({
+                                "type":"received",
                                 "laboratoryName": this.branch,
                                 "stage": this.stage
                             })
@@ -198,59 +196,7 @@ export default({
                     }
        
             }
-    },
-    //測試網頁內容是否正常運作。   A.OK
-    async test(){
-        const response = await fetch(this.$root.$host+"/api/ntags",{
-        headers:{
-        "Authorization": this.token
-        } 
-        });
-        console.log(response.status)
-        console.log("New_access_token: "+ this.$root.$accessToken)
-        console.log("New_refresh_token: "+this.$root.$refreshToken)
-        const text3 = {
-            laboratoryName: "Lab A",
-            sentDate: "2023-05-15",
-            dentistName: "Dr. Smith",
-            patientName: "John Doe",
-            medicalRecordNumber: "M12345",
-            workOrderNumber: "W98765",
-            receivedDate: "2023-05-16",
-            appointmentDate: "2023-05-20",
-            id: 123
-        };
-        const text4 =[
-            {
-        facilityName: "永康",
-        facilityType: "hospital_branch",
-        id: 1,
-        stage: "修die",
-        transactorName: "A_DT",
-        transferDateTime: "2023-05-11T15:24:07.171318Z",
-        type: "sent"
-      },
-      {
-        facilityName: "顏氏",
-        facilityType: "laboratory",
-        id: 2,
-        stage: "修die",
-        transactorName: "B_DLT",
-        transferDateTime: "2023-05-11T15:24:07.641646Z",
-        type: "received"
-      }
-        ]
-        console.log(text3)
-
-        this.data.forEach(item => {
-        item.value = text3[item.id];
-        });
-
-        this.dataList = text4;
-        
-        console.log('success')
-
-      },
+    }
     }
     
 

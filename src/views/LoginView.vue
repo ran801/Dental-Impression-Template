@@ -2,7 +2,7 @@
     <div class="Body">
         <div class ="login" id='login'>
             <div v-if="isLogin">
-                <h1 align="center" style="position: relative; top: 100px"><br> 您好!</h1>
+                <h1 align="center" style="position: relative; top: 100px"><br>{{name}}<br>您好!</h1>
 
                 <button value="登出" class="btn2" @click.prevent="logout">登出</button>
             </div>
@@ -30,8 +30,10 @@ export default({
 
     mounted(){
         const isLogin= localStorage.getItem('isLogin');
+        this.name = localStorage.getItem('name');
         if(isLogin){
             this.isLogin = true;
+            this.name = localStorage.getItem('name');
         }else{
             this.isLogin = false;
         }
@@ -42,6 +44,7 @@ export default({
             password:'',
             scope:'',
             isLogin: false,
+            name:'',
         }
     },
     methods:{
@@ -73,7 +76,7 @@ export default({
             const data2 = await r2.json();
             const role = data2.role;
 
-
+            console.log(data2.username)
             //根據UserRole取得對應的scope(權限)
             switch(role){
                 case 'admin':
@@ -109,6 +112,9 @@ export default({
                 localStorage.setItem('token', access_token);
                 localStorage.setItem('refresh_token', refresh_token);
                 localStorage.setItem('isLogin', true);
+                localStorage.setItem('name',data2.username);
+                this.name = localStorage.getItem('name');
+                document.cookie = `name=${name};max-age=86400 ; path=/`;
                 document.cookie = "isLogin=true; max-age=86400 ; path=/";
                 console.log(data)
                 this.isLogin = true;
@@ -119,7 +125,6 @@ export default({
                 Vue.prototype.$refreshToken = refresh_token 
                 console.log("accessToken:"+Vue.prototype.$accessToken)
                 console.log("refreshToken:"+Vue.prototype.$refreshToken)
-
             }else{
                 Swal.fire('401 unauthorized');
             }
@@ -132,9 +137,10 @@ export default({
        ]),
        async logout(){
             document.cookie = 'isLogin=true ; max-age=0 ; path=/';
-            document.cookie = 'fullname=0; max-age=0; path=/';
+            document.cookie = 'name=0; max-age=0; path=/';
             localStorage.removeItem('token');
             localStorage.removeItem('isLogin');
+            localStorage.removeItem('name');
             this.fullname='';
             this.isLogin = false;
             await Swal.fire('登出成功');

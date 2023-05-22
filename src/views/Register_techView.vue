@@ -5,7 +5,7 @@
       <template>
           <div class="user-details">
               <div class="title">使用者註冊</div>
-            <form class = "form">
+            <form class = "form" @submit.prevent="register">
               <div class="input-box">
                 <div class="details">單位：</div>
                 <select placeholder="請選擇工作單位" v-model="facilityId" required>
@@ -62,12 +62,20 @@ export default {
   },
   methods: {
     async register() {
+        if (!this.facilityId || !this.role || !this.username || !this.personnelNumber || !this.password) {
+        Swal.fire("需填寫完畢");
+        return;
+      }
       const username = this.username;
       const role = this.role;
       const personnelNumber = this.personnelNumber;
       const password = this.password;
       const facilityId = parseInt(this.facilityId);
-    
+      
+      if (!/^(?=.*[a-zA-Z])(?=.*[0-9]).{8,}$/.test(this.password)) {
+      Swal.fire("密碼格式不對<br>密碼格式需有中英字母且位數至少為6");
+      return;
+      }
       const token = "Bearer " + localStorage.getItem("token");
       const { value: confirmed } = await Swal.fire({
         title: `你的姓名是: ${username}\n人事號是: ${personnelNumber}`,
@@ -75,7 +83,7 @@ export default {
       });
       
       if (confirmed) {
-        const r = await fetch(this.$root.$host+"/api/users", {
+        const r = await fetch(`${this.$root.$host}/api/users`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

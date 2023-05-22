@@ -16,86 +16,69 @@
             <colgroup></colgroup>
             <tr>
                 <td>運送狀態</td>
+                <!-- 尚未完成 -->
                 <td v-if="teeth_model">{{teeth_model.status}}</td>
             </tr>
             <tr>
                 <td>醫師</td>
                 <td>
-                    <template v-if="teeth_model && teeth_model.doctor">
-                        <input type="text" v-model="dentistName" style="width: 300px;">
-                    </template>
-                    <template v-else>
-                        <select v-model="teeth_model.doctor" id="doctor">
-                            <option v-for="doctor in doctors" :key="doctor.username" :value="doctor">{{doctor.fullname}}</option>
-                        </select>
-                    </template>
+                    <input v-if="dentistName" type="text" v-model="dentistName" style="width: 300px;">
+                    <select v-else v-model="teeth_model.doctor" id="doctor">
+                        <option v-for="username in usernames" :key="username.id" :value="username.id">{{username}}</option>
+                    </select>
                 </td>
             </tr>
-            <tr>
+            <tr> 
                 <td>病人姓名</td>
                 <td>
-                    <template v-if="teeth_model && teeth_model.patient" >
-                        <input type="text" id="patient" style="width: 300px;" :value="teeth_model.patient"/>
-                    </template>
-                    <template v-else>
-                        <input type="text" id="patient" style="width:300px;" value=""/>
-                    </template>
+                    <input type="text"  style="width: 300px;" v-model="patientName"/>
                 </td>
             </tr>
             <tr>
                 <td>病歷號</td>
                 <td>
-                    <template v-if="teeth_model.medical_record_number">
-                        <input type="text" id="medical_record_number" style="width: 300px;" :value="teeth_model.medical_record_number"/>
-                    </template>
-                    <template v-else>
-                        <input type="text" id="medical_record_number" style="width: 300px;" value=""/>
-                    </template>
+                    <input type="text" style ="width: 300px;" v-model="medicalRecordNumber"/>
                 </td>
             </tr>   
             <tr>
                 <td>序號</td>
                 <td>
-                    <template v-if="teeth_model.work_order_number">
-                        <input type="text" id="work_order_number" style="width: 300px;" :value="teeth_model.work_order_number"/>
-                    </template>
-                    <template v-else>
-                        <input type="text" id="work_order_number" style="width: 300px;" value="" />
-                    </template>
+                    <input type="text" style = "width: 200px;" v-model="workOrderNumber"/>
                 </td>
             </tr>
-            <tr>
+            <tr> 
+                <!-- 尚未完成 -->
                 <td>步驟</td>
                 <td v-if="teeth_model.step">{{teeth_model.step}}</td>
                 <td v-else></td>
             </tr>
             <tr>
                 <td>送出日期</td>
-                <td>{{ teeth_model.send_date }}</td>
+                <td>{{ sentDate !== null ? sentDate : '' }}</td>
             </tr>
             <tr>
                 <td>交件日期</td>
-                <td v-if="teeth_model.receive_date">{{ teeth_model.receive_date }}</td>
-                <td v-else></td>
+                <td>{{ receivedDate !== null ? receivedDate : '' }}</td>
+
                 </tr>
             <tr>
                 <td>回診日期</td>
-                <td><input type="date" id="return_date" style="width: 300px;" :value="teeth_model.return_date"></td>
+                <td><input type="date" style="width: 300px;" v-model="appointmentDate"></td>
             </tr>
             <tr >
                 <td>技工所</td>
-                <td>
-                    <select class="select" id="laboratory" v-model="selectedLab">
-                    <option v-for="list in list1" :key="list" :value="list" :selected="list === teeth_model.laboratory">{{list}}</option>
-                    </select>
-                </td>
+                    <td>
+                        <select class="select" id="laboratory" v-model="laboratoryName">
+                            <option v-for="list in list1" :key="list" :value="list" :selected="list === laboratoryName">{{list}}</option>
+                        </select>
+                    </td>
             </tr>
         </table>
         <div style="position: relative; top: 10px;">
           <button class="btn2" @click="save">儲存</button>
-          <span class="t4" id="savetext"  ></span>
-          <button class="btn3" id="delete_image">刪除照片</button>
+          <span class="t4">{{savetext}}</span>
           <button class="btn4" @click="makePDF">匯出</button>
+          <button class="btn4" @click='test'>測試</button>
         </div>
          <img src="https://img.alicdn.com/imgextra/i2/78424090/TB2JqHbbaSWBuNjSsrbXXa0mVXa_!!78424090.jpg_400x400Q50s50.jpg_.webp" alt="image" class="BIG" id="BIG" >
          <div id="SMALL" class="slider">
@@ -125,84 +108,153 @@
 </template>
 
 <script>
-import jspdf from "jspdf";
+import jsPDF from "jspdf";
 import 'jspdf-autotable';
-import msjh from '@/../public/fonts/msjh.ttf';
+import msjhFont from '@/../public/fonts/msjh.ttf';
+// import {fromByteArray} from "base64-js";
 
 export default {
+    mounted(){
+            this.$root.$refreshT();
+
+            this.docterselect();
+
+            this.id = this.$route.params.id;
+            this.itemData = this.$route.query
+
+            this.dentistName = this.itemData.dentistName
+            this.patientName = this.itemData.patientName
+            this.medicalRecordNumber = this.itemData.medicalRecordNumber
+            this.workOrderNumber = this.itemData.workOrderNumber
+            //impressions的步驟尚未有
+            this.sentDate = this.itemData.sentDate
+            this.receivedDate = this.itemData.receivedDate
+            this.appointmentDate = this.itemData.appointmentDate
+            this.laboratoryName = this.itemData.laboratoryName
+
+            console.log('資料ID:',this.id);
+            console.log('傳遞的資料:', this.itemData )
+            console.log(this.laboratoryName)
+            
+
+    },
     data() {
         return{
             teeth_model:{
                 doctor:{fullname:''},
             },
             selectedLab:null,
-            list1:['lab1','lab2'],
+            list1:['顏氏','鴻冠', '良曄'],
             images:[],
             transfers:[],
             doctor:'',
-            patient:'',
             savetext:'',
             token:`Bearer `+ this.$root.$accessToken,
+            dentistName:'',
+            patientName:'',
+            medicalRecordNumber:'',
+            workOrderNumber:'',
+            sentDate:'',
+            receivedDate:'',
+            appointmentDate:'',
+            id: null,
             itemData:[],
-            dentistName: "",
+            usernames: [],
+            laboratoryName:'',
         }
-    },
-    mounted(){
-            const callback = async() =>{
-            await this.$refresh(110,callback);
-            };
-            this.$refresh(110,callback);
-            const id = this.$route.params.id;
-            this.itemData = this.$route.query
-            this.dentistName = this.itemData.dentistName
-
-
-            console.log('資料ID:',id);
-            console.log('傳遞的資料:', this.itemData )
     },
     
     methods:{
+        async docterselect(){
+            try{
+                const r = await fetch(`${this.$root.$host}/api/users?role=dentist`,{
+                    headers:{
+                        "Authorization":this.token
+                    }
+                });
+                const data = await r.json();
+                const usernames = data.map(item => item.username);
+                this.usernames = usernames;
+                console.log(usernames)
+                console.log (data)
+            }catch(error){
+                console.error(error);
+            }
+        },
+        async test(){
+            const username = this.username;
+            console.log(username)
+        },
         async save(){
-            const doctor = this.doctor;
-            const patient = this.patient;
-            const medical_record_number = this. medical_record_number;
-            const work_order_number = this.work_order_number;
-            const return_date = this.return_date;
-            const teeth_model_id = this.teeth.teeth_model_id;
-            const laboratory = this. laboratory;
-            const token = "Bearer" + localStorage.getItem("token");
-            const response = await fetch("/api/teeth_models/"+teeth_model_id,{
+            //const dentistName = this.username;
+            const patientName = this.patientName;
+            const medicalRecordNumber = this.medicalRecordNumber;
+            const workOrderNumber = this.workOrderNumber;
+            const appointmentDate = this.appointmentDate;
+            //const laboratoryName = this.laboratoryName;
+ 
+
+            const response = await fetch(`${this.$root.$host}/api/impressions/${this.id}`,{
                 method: "PATCH",
                 headers:{
                     "Content-Type":"application/json",
-                    "Authorization": token,
+                    "Authorization": this.token,
                 },
-                body: JSON.stringify({
-                    doctor:doctor,
-                    patient:patient,
-                    medical_record_number: medical_record_number,
-                    work_order_number : work_order_number,
-                    return_date :return_date,
-                    laboratory : laboratory,
+                body: JSON.stringify({ //dentistName 、laboratoryName 要改成 personnelNumber 、laboratoryId
+                    "dentistPersonnelNumber":"RqOBZD",
+                    "patientName": patientName,
+                    "medicalRecordNumber": medicalRecordNumber,
+                    "workOrderNumber": workOrderNumber,
+                    "appointmentDate": appointmentDate, 
+                    "laboratoryId": 2,
                 })
             });
-            console.log(response.text());
+            console.log(response.status);
             this.savetext="記錄儲存成功"
 
         },
         async makePDF(){
-            const doc = new jspdf.jsPDF();
-            doc.addFileToVFS('msjh.ttf', msjh);
-            doc.addFont('msjh.ttf' , 'msjh' , 'normal');
-            doc.setFont('msjh');
+            // const doc = new jspdf();
+            // doc.addFileToVFS('msjh.ttf', msjh);
+            // const fontData = await fetch('fonts/msjh.ttf').then(response => response.arrayBuffer());
+            // const encodedFontData = fromByteArray(new Uint8Array(fontData));
+
+            // doc.addFont(encodedFontData , 'msjh' , 'normal');
+            // doc.setFont('msjh');
+
+            // const tableElement = this.$refs.table;
+
+            // doc.autoTable({
+            //     html: tableElement,
+            //     styles:{
+            //         font: 'msjh',
+            //         fontStyle: 'normal',
+            //     },
+            // });
+            // doc.save('運送記錄.pdf');
+            const doc = new jsPDF();
+            console.log(msjhFont)
+            // doc.addFileToVFS('msjh.ttf', msjhFont);
+            // doc.addFont('msjh.ttf', 'msjh', 'normal');
+
+            const columns =[
+                { header: '進出口', dataKey: 'action' },
+                { header: '日期', dataKey: 'date' },
+                { header: '步驟', dataKey: 'step' },
+                { header: '接收人', dataKey: 'transactor' },
+            ]
+                const rows = this.transfers.map((transfer) => ({
+                    action: transfer.action,
+                    date: transfer.date,
+                    step: transfer.step || '',
+                    transactor: transfer.transactor,
+                }));
+
             doc.autoTable({
-                html:'#table2',
-                styles:{
-                    font: 'msjh',
-                    fontStyle: 'normal',
-                },
+                columns,
+                body:rows
             });
-            doc.save('運送記錄.pdf');
+            doc.save('運輸紀錄.pdf');
         }
 
     }

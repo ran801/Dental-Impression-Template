@@ -6,7 +6,7 @@
             <option value="2">柳營</option>
             <option value="1">永康</option>
             <option value="3">佳里</option>
-            <option value="4">顏式</option>
+            <option value="4">顏氏</option>
             <option value="5">鴻冠</option>
             <option value="6">良曄</option>
         </select>
@@ -15,11 +15,9 @@
     <div id="SMALL" class="slider"></div>
 
     <div>
-        <form style="position: absolute; left: 600px; top:250px;">``
+        <form style="position: absolute; left: 560px; top:250px;">``
             <input type="button" value="掃描" class="btn1" @click="nTag_scan()">
-            <input type="button" value="刪除" class="btn3" @click="remove(k)">
             <input type="button" value="確認" class="btn4" @click="upload()">
-            <input type="button" value="測試掃描" class="btn4" @click="test()">
             <div class ="txt" id="ntag">{{ntag1}}</div>
             <div class ="txt" id="ntag2">{{ntag2}}</div>
         </form>
@@ -72,20 +70,7 @@ export default {
   },
 
   mounted(){
-    // this.getTagScanData();
-    // $('.slider').slick({
-    //   slidesToShow: 4,
-    //   slidesToScroll: 4
-    // });
-
-    // this.get_image();
-    // 在需要使用计时器的组件中
-    
-  const callback = async() => {
-    await this.$refresh(110, callback); 
-  };
-  this.$refresh(110, callback);
-
+    this.$root.$refreshT();
 },
 
   
@@ -110,7 +95,6 @@ export default {
             "Authorization":this.token
           }
         });
-        // const text2 = await r2.status;
         console.log(r2.status);
 
         if (r2.status===404){
@@ -194,32 +178,6 @@ export default {
           }
         }
       },
-      // async get_image(){
-      //   const r = await fetch ("http://127.0.0.1:30000/image");
-      //   const text = await r.text();
-      //   console.log(text);
-
-      //   this.smallImgSrcs.push("httpL//127.0.0.1:30000"+text);
-      // },
-      // select(imgSrc, index) {
-      //   const imgElement = document.getElementById("SS" + index);
-      //   if (imgElement.style.color === "red") {
-      //     imgElement.style.color = "black";
-      //     document.getElementById("remove").onclick = null;
-      //   } else {
-      //     imgElement.style.color = "red";
-      //     document.getElementById("remove").onclick = () => this.remove(index);
-      //     document.getElementById("BIG").src = imgSrc;
-      //     document.getElementById("BIG").ondblclick = () => this.dbclick(imgSrc);
-      //   }
-      // },
-      // dbclick(imgSrc) {
-      //   console.log(imgSrc);
-      //   window.open(imgSrc, "_blank");
-      // },
-      // remove(index) {
-      //   this.smallImgSrcs.splice(index, 1);
-      // },
       async upload() {
         const ntag = this.ntag;
         const facilityId = parseInt(this.branch);
@@ -252,37 +210,7 @@ export default {
         const text4 = await r4.json();
         console.log(text4);
         this.ntag2 = "完成牙模送出";
-
-        // const image = this.$refs.SMALL;
-        // for (let i = 0; i < image.children.length; i++) {
-        //   const img = image.children[i].src.substr(-26);
-        //   const r5 = await fetch(`http://127.0.0.1:30000/uploadImage?teeth_model_id=${teeth_model_id}&image=${img}`);
-        //   const text5 = await r5.text();
-        //   console.log(text5);
-        // }
-        
         window.location.reload();
-      },
-
-      async test(){
-        const response = await fetch(this.$root.$host+"/api/ntags",{
-        headers:{
-        "Authorization": `Bearer `+ this.$root.$accessToken 
-        } 
-        });
-        const r7 = await fetch(this.$root.$host+`/api/impressions/2/transferRecords`,{
-        headers:{
-          "Authorization": this.token
-        }
-        });
-        const text7 = await r7.json();
-        console.log(text7);
-        this.items = [] ;
-        this.items = text7;
-            
-        console.log(response.status)
-        console.log("New_access_token: "+ this.$root.$accessToken)
-        console.log("New_refresh_token: "+this.$root.$refreshToken)
       },
 
     }

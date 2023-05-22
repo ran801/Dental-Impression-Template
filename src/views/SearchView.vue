@@ -5,7 +5,7 @@
             <select class="select"  id ="search" v-model="search">
                 <option>送出日期</option>
                 <option>交件日期</option>
-                <option>病歷號</option>
+                <option>序號</option>
                 <option>填寫未完成</option>
                 <option>回診日期</option>
                 <option>已結案</option>
@@ -63,7 +63,8 @@
                                 params: { id: item.id }, 
                                 query: {  
                                     ...itemData,
-                                    laboratoryName2: item.laboratoryName,
+                                    laboratoryName: item.laboratoryName,
+                                    laboratoryId : item.laboratoryId,
                                     dentistName: item.dentistName,
                                     medicalRecordNumber: item.medicalRecordNumber,
                                     patientName: item.patientName,
@@ -78,7 +79,7 @@
                         <td>{{ item.laboratoryName !== null ? item.laboratoryName : ""}}</td>
                         <td>{{ item.medicalRecordNumber !== null  ? item.medicalRecordNumber : "" }}</td>
                         <td>{{ item.patientName !== null ? item.patientName : "" }}</td>
-                        <td>{{ item.workOrderNumber !== null ? item.workOrderNumber: "" }}</td>
+                        <td>{{ item.workOrderNumber !== null ? item.workOrderNumber : "" }}</td>
                         <td>{{ item.sentDate  }}</td>                        
                         <td>{{ item.receivedDate !== null ? item.receivedDate : "" }}</td>
                         <td>{{ item.appointmentDate !== null ? item.appointmentDate : "" }}</td>
@@ -92,6 +93,7 @@
 
 <script>
 import Swal from 'sweetalert2'
+// import Vue from 'vue'
 export default{
 
     data(){
@@ -119,11 +121,7 @@ export default{
     this.start_date = this.currentDate;
     this.end_date = this.currentDate;
 
-    const callback = async() =>{
-        await this.$refresh(110,callback);
-    };
-    this.$refresh(110,callback);
-
+    this.$root.$refreshT();
 
   },
     methods:{
@@ -156,8 +154,8 @@ export default{
                 this.items = text4;
             }
             break;
-            case "病歷號":{
-                const r5 = await fetch(this.$root.$host+`/api/impressions?medicalRecordNumber=${record_number}`,{
+            case "序號":{
+                const r5 = await fetch(this.$root.$host+`/api/impressions?workOrderNumber=${record_number}`,{
                     headers:{
                         "Authorization":this.token
                     }

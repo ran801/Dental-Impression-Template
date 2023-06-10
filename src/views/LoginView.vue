@@ -23,7 +23,6 @@
 
 <script>
 import Swal from 'sweetalert2'
-import {mapMutations} from 'vuex'
 import Vue from 'vue'
 
 export default({
@@ -74,19 +73,21 @@ export default({
                 }
             });
             const data2 = await r2.json();
-            const role = data2.role;
-
+            const role = data2.role;        
             console.log(data2.username)
+            
+
+            
             //根據UserRole取得對應的scope(權限)
             switch(role){
                 case 'admin':
-                    this.scope = "users:read users:create users:delete ntags:read ntags:create ntags:delete facilities:read facilities:create facilities:delete stages:read stages:create stages:delete impressions:read impressions:create impressions:update impressions:delete transferRecords:read transferRecords:create notifications:register  notifications:send ";
+                    this.scope = "users:read users:create users:delete ntags:read ntags:create ntags:delete facilities:read facilities:create facilities:delete stages:read stages:create stages:delete impressions:read impressions:create impressions:update impressions:delete transferRecords:read transferRecords:create notifications:register  notifications:send users:invite feedbacks:create feedbacks:read feedbacks:update feedbacks:delete";
                     break;
                 case 'dentist':
-                    this.scope = "impressions:read transferRecords:read notifications:register";
+                    this.scope = "impressions:read transferRecords:read notifications:register  feedbacks:read feedbacks:update";
                     break;
                 case 'dental_technician':
-                    this.scope = "users:read users:create users:delete ntags:read ntags:create facilities:read facilities:create facilities:delete stages:read stages:create stages:delete impressions:read impressions:create impressions:update transferRecords:read transferRecords:create notifications:register notifications:send";
+                    this.scope = "users:read users:create users:delete ntags:read ntags:create facilities:read facilities:create facilities:delete stages:read stages:create stages:delete impressions:read impressions:create impressions:update transferRecords:read transferRecords:create notifications:register notifications:send users:invite feedbacks:create feedbacks:read feedbacks:update feedbacks:delete";
                     break;
                 case 'dental_laboratory_technician':
                     this.scope = "stages:read impressions:read transferRecords:read transferRecords:create";
@@ -98,33 +99,98 @@ export default({
             params2.append('username', this.username);
             params2.append('password', this.password);
             params2.append('scope', this.scope);
-            const r3 = await fetch(this.$root.$host+'/oauth/token',{
+            const r4 = await fetch(this.$root.$host+'/oauth/token',{
                 method: 'POST',
                 headers:{
                     'Content-Type':'application/x-www-form-urlencoded',
                 },
                 body: params2.toString(),
             });
-
-            if (r3.status ===200){
-                const data = await r3.json();
-                const {access_token, refresh_token}=data;
+            
+            if (r4.status===200){
+                const data4 = await r4.json();
+                const {access_token, refresh_token}=data4;
                 localStorage.setItem('token', access_token);
                 localStorage.setItem('refresh_token', refresh_token);
-                localStorage.setItem('isLogin', true);
-                localStorage.setItem('name',data2.username);
-                this.name = localStorage.getItem('name');
-                document.cookie = `name=${name};max-age=86400 ; path=/`;
-                document.cookie = "isLogin=true; max-age=86400 ; path=/";
-                console.log(data)
-                this.isLogin = true;
                 
-                await Swal.fire('登入成功');
-                this.$parent.isLogin=true;
-                Vue.prototype.$accessToken= access_token
-                Vue.prototype.$refreshToken = refresh_token 
-                console.log("accessToken:"+Vue.prototype.$accessToken)
-                console.log("refreshToken:"+Vue.prototype.$refreshToken)
+                const r5 = await fetch(`${this.$root.$host}/api/users/me`,{
+                    headers:{
+                        "Authorization":`Bearer ${access_token}`
+                    }
+                });
+                const data5 = await r5.json();
+                const isNotifyConnected = data5.isNotifyConnected;
+                console.log(isNotifyConnected)
+
+                // 如果false，改為登入line notify，true就繼續功能
+                if (isNotifyConnected == false){
+                    await Swal.fire({
+                        title:'尚未連結line notify',
+                        text: '請連結line notify 已收到牙模進出口通知',
+                        icon:'question',
+                        showCancelButton: true,
+                        confirmButtonText:'連結',
+                        cancelButtonText:'先不用'
+                    }).then(async(result)=>{
+                        if(result.isConfirmed){
+                            const r6 = await fetch(`${this.$root.$host}/api/notifications/register`,{
+                                method:"POST",
+                                headers:{
+                                    "Content-Type": "application/json",
+                                    "Authorization": `Bearer ${access_token}`
+                                }
+                            });
+                            const data3 = await r6.json();
+                            const url = data3.url
+                            window.location.replace(url)
+                            console.log(url)
+                            return
+                        }else if (result.dismiss === Swal.DismissReason.cancel){
+                            localStorage.setItem('isLogin', true);
+                            localStorage.setItem('name',data2.username);
+                            localStorage.setItem('role',role)
+                            this.name = localStorage.getItem('name');
+                            document.cookie = `name=${name};max-age=86400 ; path=/`;
+                            document.cookie = "isLogin=true; max-age=86400 ; path=/";
+                            console.log(data)
+                            this.isLogin = true;                                        
+                            await Swal.fire('登入成功');
+                            this.$parent.isLogin=true;
+                            Vue.prototype.$accessToken= access_token
+                            Vue.prototype.$refreshToken = refresh_token
+                            console.log("role:",localStorage.getItem("role")) 
+                            console.log("accessToken:"+Vue.prototype.$accessToken)
+                            console.log("refreshToken:"+Vue.prototype.$refreshToken)
+                            if(role =="admin" || role =="dental_technician"){
+                                this.$parent.inviteView =true;
+                            }else{
+                                this.$parent.inviteView = false;
+                            }
+                        }
+                    })
+                }else{
+                    localStorage.setItem('isLogin', true);
+                    localStorage.setItem('name',data2.username);
+                    localStorage.setItem('role',role);
+                    this.name = localStorage.getItem('name');
+                    document.cookie = `name=${name};max-age=86400 ; path=/`;
+                    document.cookie = "isLogin=true; max-age=86400 ; path=/";
+                    console.log(data)
+                    this.isLogin = true;                                        
+                    await Swal.fire('登入成功');
+                    this.$parent.isLogin=true;
+                    Vue.prototype.$accessToken= access_token
+                    Vue.prototype.$refreshToken = refresh_token
+                    if(role =="admin" || role =="dental_technician"){
+                        this.$parent.inviteView =true;
+                    }else{
+                        this.$parent.inviteView = false;
+                    }
+                    console.log("role:",localStorage.getItem("role")) 
+                    console.log("accessToken:"+Vue.prototype.$accessToken)
+                    console.log("refreshToken:"+Vue.prototype.$refreshToken)
+                    
+                }
             }else{
                 Swal.fire('401 unauthorized');
             }
@@ -132,15 +198,14 @@ export default({
             Swal.fire('帳號密碼錯誤');
         }
        },
-       ...mapMutations([
-        'setToken'
-       ]),
+       
        async logout(){
             document.cookie = 'isLogin=true ; max-age=0 ; path=/';
             document.cookie = 'name=0; max-age=0; path=/';
             localStorage.removeItem('token');
             localStorage.removeItem('isLogin');
             localStorage.removeItem('name');
+            localStorage.removeItem('role');
             this.fullname='';
             this.isLogin = false;
             await Swal.fire('登出成功');

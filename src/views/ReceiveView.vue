@@ -1,18 +1,9 @@
 <template>
     <div>
        <div class ="t2">
-            院區
-            <select class ="select" id="branch" v-model="facilityId">
-                <option value="1">永康</option>
-                <option value="2">柳營</option>
-                <option value="3">佳里</option>
-                <option value="4">顏氏</option>
-                <option value="5">鴻冠</option>
-                <option value="6">良曄</option>
-            </select>
             <span>
             步驟
-                <select class="select" style="width:180px;" id="stage" v-model="stage">
+                <select class="select" style="width:180px;" id="stageId" v-model="stageId">
                     <option value="1">修die</option>
                     <option value="2">選配件</option>
                     <option value="3">已完成</option>
@@ -78,8 +69,7 @@ export default({
                 { id: 'appointmentDate', label: '病人回診日', value: '' },
                 
             ],
-            facilityId:'1',
-            stage:'1',
+            stageId:'1',
             uid:'',
             ntag:'尚未掃描',
             ntag2:'尚未掃描',
@@ -92,8 +82,7 @@ export default({
             receivedDate:'',
             appointmentDate:'',
             dataList:[],
-            
-            token:`Bearer `+ this.$root.$accessToken 
+            token:`Bearer ${this.$root.$accessToken}` 
         }
     },
     mounted(){  
@@ -105,7 +94,7 @@ export default({
         const date = new Date(dataTime);
         return date.toISOString().slice(0,10);
         },
-        async recive_scan(){
+        async receive_scan(){
             const r = await fetch("http://127.0.0.1:20000/uid");
             const text = await r.text();
             console.log (text)
@@ -141,7 +130,7 @@ export default({
                 this.receivedDate="";
                 this.appointmentDate="";
                 }else{
-                    const r3 = await fetch(this.$root.$host+`/api/impressions?ntagUid=${text}`,{
+                    const r3 = await fetch(`${this.$root.$host}/api/impressions?ntagUid=${text}`,{
                         headers:{
                             "Authorization":this.token
                         }
@@ -165,9 +154,9 @@ export default({
                         item.value = text3[0][item.id];
                         });
                         const id = text3[0].id
+                        const stageId = parseInt(this.stageId)
 
 
-                        //impressions沒有對應的stage資料，確認這部分要做什麼
                         const r4 = await fetch(this.$root.$host+`/api/impressions/${id}/transferRecords`,{
                             method: "POST",
                             headers: {
@@ -176,8 +165,7 @@ export default({
                             },
                             body: JSON.stringify({
                                 "type":"received",
-                                "laboratoryName": this.branch,
-                                "stage": this.stage
+                                "stageId":stageId
                             })
                         });
                         const text4 = await r4.json();

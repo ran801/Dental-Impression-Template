@@ -7,8 +7,9 @@
       <router-link to="/search">查詢</router-link> |
       <router-link to="/closed">結案</router-link> |
       <router-link to="/register_tech">註冊</router-link> |
-      <router-link to="/login">登入</router-link> |
-      <router-link to="/">回饋</router-link> |
+      <router-link to="/">登入</router-link> |
+      <router-link v-if="inviteView" to="/invite">邀請</router-link>
+      <!-- <router-link to="/">回饋</router-link> | -->
 
       <div class="animation"></div>
       <a class="t1">牙模系統</a>
@@ -27,17 +28,25 @@ export default {
   name: 'App',
   data(){
     return{
-      isLogin:false
+      isLogin:false,
+      role:"",
+      inviteView:false,
     };
   },
 
   mounted() {
     const isLogin = localStorage.getItem('isLogin');
-     
+    const role = localStorage.getItem('role'); 
+    console.log(role)
     if(isLogin){
       this.isLogin=true;
     }else{
       this.isLogin=false;
+    }
+    if(role === "admin"|| role === "dental_technician"){
+      this.inviteView =true;
+    }else{
+      this.inviteView = false;
     }
   },
 

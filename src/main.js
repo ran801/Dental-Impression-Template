@@ -6,7 +6,12 @@ import store from './store'
 Vue.config.productionTip = false
 Vue.prototype.$accessToken = null;
 Vue.prototype.$refreshToken = null;
+Vue.prototype.$role = "";
 Vue.prototype.$host = "https://dits.stavhaygn.tw:443";
+
+localStorage.removeItem("isLogin");
+localStorage.removeItem('name')
+localStorage.removeItem('role')
 
 Vue.prototype.$refresh = async function () {
   const refreshparams = new URLSearchParams();

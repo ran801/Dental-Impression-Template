@@ -1,20 +1,31 @@
 <template>
     <div class="Body">
         <div class ="login" id='login'>
-            <div v-if="isLogin">
+            <div v-if="isLogin&&!updatePassword">
                 <h1 align="center" style="position: relative; top: 100px"><br>{{name}}<br>您好!</h1>
-
                 <button value="登出" class="btn2" @click.prevent="logout">登出</button>
+                <button value="修改密碼" class="btn3" @click="check">修改密碼</button>
             </div>
-            <div v-else>
+            <div v-else-if="!isLogin&&!updatePassword">
                 <h1 align="center" style="position: relative; top: 100px">您好!</h1>
                 <form style="position: relative; left: 70px; top:200px;">
-                <div>帳號</div>
-                <input type="text" v-model="username" style="width: 300px;">
-                <div>密碼</div>
-                <input type="text" v-model="password" style="width: 300px;">
+                    <div>帳號</div>
+                    <input type="text" v-model="username" style="width: 300px;">
+                    <div>密碼</div>
+                    <input type="text" v-model="password" style="width: 300px;">
                 </form>
-                <button value="登入" class="btn2" @click.prevent="login">登入</button>
+                <button value="登入" class="btn" @click.prevent="login">登入</button>
+            </div>
+            <div v-else-if="isLogin && updatePassword">
+                <h1 align="center" style="position: relative; top:100px">更新密碼</h1>
+                <form style="position: relative; left:70px; top:200px;">
+                    <div>舊密碼</div>
+                    <input type="text" v-model="oldPassword" style="width:300px;">
+                    <div>新密碼</div>
+                    <input type="text" v-model="newPassword" style="width:300px;">
+                    <button value="確認更改" class="btn5" @click="update">確認更改</button>
+                    <button value="取消" class="btn4" @click="cancel">取消</button>
+                </form>
             </div>
 
         </div>
@@ -44,9 +55,23 @@ export default({
             scope:'',
             isLogin: false,
             name:'',
+            updatePassword:false,
+            oldPassword:'',
+            newPassword:'',
+            access_token:'',
         }
     },
     methods:{
+
+        async check(){
+            this.updatePassword = true    
+        },
+
+        async cancel(){
+            this.updatePassword = false
+        },
+        
+
        async login(){
         const params = new URLSearchParams();
         params.append('grant_type', "password");
@@ -64,7 +89,7 @@ export default({
 
         if (r1.status===200){
             const data = await r1.json();
-            const { access_token }= data;
+            const access_token= data.access_token;
 
             //確認userrole
             const r2  = await fetch(this.$root.$host+'/api/users/me',{
@@ -156,6 +181,7 @@ export default({
                             this.isLogin = true;                                        
                             await Swal.fire('登入成功');
                             this.$parent.isLogin=true;
+                            this.access_token=access_token
                             Vue.prototype.$accessToken= access_token
                             Vue.prototype.$refreshToken = refresh_token
                             console.log("role:",localStorage.getItem("role")) 
@@ -179,6 +205,7 @@ export default({
                     this.isLogin = true;                                        
                     await Swal.fire('登入成功');
                     this.$parent.isLogin=true;
+                    this.access_token=access_token
                     Vue.prototype.$accessToken= access_token
                     Vue.prototype.$refreshToken = refresh_token
                     if(role =="admin" || role =="dental_technician"){
@@ -212,6 +239,41 @@ export default({
             this.$parent.isLogin=false;
             window.location.reload(); 
         },
+        async update(){
+            await Swal.fire({
+                title:'更新密碼資訊',
+                text:'舊密碼為：`${this.oldPassword}`<br> 新密碼為：`${this.newPassword}`',
+                icon:"question",
+                showCancelButton:true,
+                confirmButtonText:'確認',
+                concelButtonText:'取消'
+            }).then(async (result)=>{
+                if(result.isConfirmed){
+                    console.log(this.access_token)
+                    const r  =  await fetch(`${this.$root.$host}/api/users/me/password`,{
+                        method:"PUT",
+                        headers:{
+                            "Content-Type":"application/json",
+                            "Authorization":`Bearer ${this.access_token}`
+                        },
+                        body:JSON.stringify({
+                            oldPassword: this.oldPassword,
+                            newPassword: this.newPassword
+                        })
+                    });
+                    console.log(r.status)
+                    if(r.status==204){
+                        await Swal.fire("更新成功"),
+                        await this.cancel();
+                    }else{
+                        await Swal.fire("更新失敗")
+                    }
+                    return                    
+                }else{
+                    Swal.fire('取消刪除')
+                }
+            })
+        },
     },
         
 })
@@ -228,7 +290,7 @@ export default({
         border-style:solid;
         border-color:#8d8d8d;      
       }
-    .btn2{
+    .btn{
         width: 70px;
         height: 40px;
         background-color:#7dc49d;
@@ -239,8 +301,66 @@ export default({
         margin:auto;
         outline:none;
       }
+      .btn:active{
+        background-color:#6eb38d;
+      }
+    .btn2{
+        width: 70px;
+        height: 40px;
+        background-color:#7dc49d;
+        border: none;
+        position: relative;left: 100px;top: 220px;
+        border-radius:15px;
+        font-size: 18px;
+        margin:auto;
+        outline:none;
+      }
       .btn2:active{
         background-color:#6eb38d;
       }
+    .btn3{
+        width: 90px;
+        height: 40px;
+        background-color:#76a1d3;
+        border: none;
+        position: relative;left: 200px;top: 220px;
+        border-radius:15px;
+        font-size: 18px;
+        margin:auto;
+        outline:none;
+      }
+      .btn3:active{
+        background-color:#6a84b3;
+      }
+    .btn4{
+        width: 90px;
+        height: 40px;
+        background-color:#7dc49d;
+        border: none;
+        position: relative;left: 35px;top: 40px;
+        border-radius:15px;
+        font-size: 18px;
+        margin:auto;
+        outline:none;
+      }
+      .btn4:active{
+        background-color:#6eb38d;
+      }
+    .btn5{
+        width: 90px;
+        height: 40px;
+        background-color:#76a1d3;
+        border: none;
+        position: relative;
+        right: 100px; top: 80px;
+        border-radius:15px;
+        font-size: 18px;
+        margin:auto;
+        outline:none;
+      }
+      .btn5:active{
+        background-color:#6a84b3;
+      }
+
 
 </style>

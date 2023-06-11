@@ -21,6 +21,7 @@ const routes = [
     path:"/",
     name:"home",
     component: LoginView,
+    meta:{title:'牙模登入頁'}
   },
   // {
   //   path: '/',
@@ -31,26 +32,32 @@ const routes = [
     path:"/send",
     name:"SendView",
     component: SendView,
+    meta:{title:'出口頁面'}
   },
   {
     path:"/receive",
     name:"ReceiveView",
-    component: ReceiveView
+    component: ReceiveView,
+    meta:{title:'接收牙模'}
+    
   },
   {
     path:"/search",
     name:"SearchView",
-    component: SearchView
+    component: SearchView,
+    meta:{title:'搜尋頁面'}
   },
   {
     path:"/closed",
     name:"ClosedView",
-    component: ClosedView
+    component: ClosedView,
+    meta:{title:'結案頁面'}
   },
   {
     path:"/modify/:id",
     name:"ModifyView",
-    component: ModifyView
+    component: ModifyView,
+    meta:{title:'修改頁面'}
   },
   // {
   //   path:"/register",
@@ -65,12 +72,14 @@ const routes = [
   {
     path:"/form",
     name:"FormView",
-    component: FormView
+    component: FormView,
+    meta:{title:'FormPage'}
   },
   {
     path:"/invite",
     name:"InviteView",
-    component: InviteView
+    component: InviteView,
+    meta:{title:'註冊頁面'}
   },
   //FindNoPage要放在最後面
   {
@@ -92,6 +101,13 @@ const routes = [
 
 const router = new VueRouter({
   routes
+})
+
+router.beforeEach((to, from, next) => {
+    if (to.meta.title) {
+        document.title = to.meta.title
+    }
+    next();
 })
 
 export default router

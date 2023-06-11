@@ -82,24 +82,32 @@ export default {
       return date.toISOString().slice(0,10);
     },
     async nTag_scan(){
+      if(this.token == "Bearer null"){
+        Swal.fire("請先登入")
+      }else{
+      //使用ntag reader取得uid
       const r = await fetch("http://127.0.0.1:20000/uid");
-      const text = await r.text();
-      this.ntag1=text
-      console.log(text);
-      this.items=[];
+      console.log("r:",r.status)
 
       if(r.status===404){
+        this.ntag1="read failed"
         this.ntag2="掃描失敗"
-      }else{
-        //查看api/ntags/uid是否存在
-        const r2 = await fetch(this.$root.$host+`/api/ntags/${text}`,{
+        this.items=[]
+      }else {
+        const text = await r.text();
+        this.ntag1=text
+        console.log("找到uid:",text);
+        this.items=[];
+        //偵測api中是否有ntags
+        const r2 = await fetch(`${this.$root.$host}/api/ntags/${this.ntag1}`,{
           headers:{
-            "Authorization":this.token
-          }
+            "Authorization": this.token
+        }
         });
-        console.log("r2:", r2.status);
+        console.log("r2:",r2.status)
 
-        if (r2.status===404){
+        if (r2.status === 404){
+        //新增一筆ntag(id)
           const r3 = await fetch(`${this.$root.$host}/api/ntags`,{
             method:"POST",
             headers:{
@@ -107,77 +115,51 @@ export default {
               "Authorization":this.token
             },
             body: JSON.stringify({
-              "uid":text
+              "uid":this.ntag1
             })
           });
-          const text3 = await r3.text();
-          console.log(text3.status);
-          this.ntag2="建立新的ntag";
-          //功能拆開
-          // const r5= await fetch(`${this.$root.$host}/api/impressions`,{
-          //   method:"POST",
-          //   headers:{
-          //     "Content-Type": "application/json",
-          //     "Authorization": this.token
-          //   },
-          //   body:JSON.stringify({
-          //     "ntagUid":text
-          //   })
-          // });
-          // const text5 = await r5.text();
-          // console.log(text5);
-          // this.ntag2="完成牙模建立";
+          console.log("r3:",r3.status)
+          this.ntag2 ="建立新的ntag";
         }
-          const r4 = await fetch(`${this.$root.$host}/api/ntags/${text}`,{
-            headers:{
-            "Authorization":this.token              
-            }
-          });
-          const text4 = await r4.status;
-          console.log("r4:",text4);
-
-          if(r4.status == 404){
-            //如果ntag沒有uid，則POST ntagUid
-            const r5 = await fetch(`${this.$root.$host}/api/impressions`,{
-              method:"POST",
-              headers:{
-                "Content-Type": "application/json",
-                "Authorization": this.token
-              },
-              body: JSON.stringify({
-                ntagUid:text
-              })
-            });
-            const text5 = await r5.text();
-            console.log(text5);
-            this.ntag2="完成牙模建立";
-          }else{
-            //如果有uid，抓出對應的資料：進出口、日期、院區、步驟、季送人
-            const text5 = await r4.json();
-            console.log(text5);
-            console.log(text);
-            this.ntag2="已建立的牙模";
-            const r6= await fetch(`${this.$root.$host}/api/impressions?ntagUid=${text}` ,{
-              headers:{
-                "Authorization": this.token
-              }
-            });
-            const text6 =await  r6.json();
-            const id = text6[0].id
-            console.log("r6:",id)
-
-            const r7 = await fetch(this.$root.$host+`/api/impressions/${id}/transferRecords`,{
-              headers:{
-                "Authorization": this.token
-              }
-            });
-            const text7 = await r7.json();
-            console.log(text7);
-            this.items = [] ;
-            this.items = text7;
-            }
+        //新增一筆牙模資料
+        const r4 = await fetch(`${this.$root.$host}/api/impressions`,{
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json",
+            "Authorization":this.token
+          },
+          body: JSON.stringify({
+            "ntagUid":this.ntag1
+          })
+        });
+        if(r4.status==400){
+          this.ntag2="已建立的牙模"
         }
+        console.log("r4:",r4.status) 
+        //取得該uid的牙模資料，並取得牙模的id值  
+        const r5 = await fetch(`${this.$root.$host}/api/impressions?ntagUid=${this.ntag1}`,{
+          headers:{
+            "Authorization":this.token
+        },
+        });
+        const response = await r5.json();
+        const id = response[0].id
+        console.log("r5:",r5.status)
+        console.log("第",id,"筆資料")
+        //取得該id的transferRecords資料，並列進表格中
+        const r6= await fetch(`${this.$root.$host}/api/impressions/${id}/transferRecords`,{
+          headers:{
+            "Authorization":this.token
+          }
+        });
+        const response2 = await r6.json();
+        console.log(response2)
+        this.items=[];
+        this.items=response2;
+        }
+      }
       },
+      
       async upload() {
         const ntag = this.ntag1;
         const stageId = parseInt(this.stageId);

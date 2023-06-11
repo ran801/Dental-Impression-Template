@@ -51,7 +51,7 @@
                             </div>
                         </td>
                         <td>
-                            {{ item.ntagUid ? item.ntagUid : '已結案' }}
+                            {{ item.ntagUid ? item.ntagUid.substring(2,5) : '已結案' }}
                         </td>
                         <td> 
                             <template v-if="item.isClosed">
@@ -61,19 +61,6 @@
                                 <router-link :to="{ 
                                     name: 'ModifyView', 
                                     params: { id: item.id }, 
-                                    query: {  
-                                    ...itemData,
-                                    laboratoryName: item.laboratoryName,
-                                    laboratoryId: item.laboratoryId,
-                                    dentistName: item.dentistName,
-                                    medicalRecordNumber: item.medicalRecordNumber,
-                                    patientName: item.patientName,
-                                    workOrderNumber: item.workOrderNumber,
-                                    sentDate: item.sentDate,
-                                    receivedDate: item.receivedDate,
-                                    appointmentDate: item.appointmentDate,
-                                    stage: item.stage
-                                    }
                                 }" :disabled="item.isClosed">
                                     {{ item.allFieldsFilled ? '完成' : '未完成' }}
                                 </router-link>
@@ -147,7 +134,7 @@ export default{
         console.log(this.token)
         switch (search){
             case "送出日期":{
-                const r3 = await fetch(this.$root.$host+`/api/impressions?sentDateFrom=${start_date}&sentDateTo=${end_date}`,{
+                const r3 = await fetch(this.$root.$host+`/api/impressions?sentDateFrom=${start_date}&sentDateTo=${end_date}&isClosed=false`,{
                     headers:{
                     "Authorization":this.token
                     }
@@ -162,7 +149,7 @@ export default{
             }
             break;
             case "交件日期":{
-                const r3 = await fetch(this.$root.$host+`/api/impressions?receivedDateFrom=${start_date}&receivedDateTo=${end_date}`,{
+                const r3 = await fetch(this.$root.$host+`/api/impressions?receivedDateFrom=${start_date}&receivedDateTo=${end_date}&isClosed=false`,{
                     headers:{
                         "Authorization":this.token
                     }
@@ -178,7 +165,7 @@ export default{
             break;
             case "序號":{
                 
-                const r3 = await fetch(this.$root.$host+`/api/impressions?workOrderNumber=${record_number}`,{
+                const r3 = await fetch(this.$root.$host+`/api/impressions?workOrderNumber=${record_number}&isClosed=false`,{
                     headers:{
                         "Authorization":this.token
                     }
@@ -192,7 +179,7 @@ export default{
             }
             break;
             case "填寫未完成":{
-                const r3 = await fetch(this.$root.$host+`/api/impressions?sentDateFrom=${start_date}&sentDateTo=${end_date}&allFieldsFilled=false`,{
+                const r3 = await fetch(this.$root.$host+`/api/impressions?sentDateFrom=${start_date}&sentDateTo=${end_date}&allFieldsFilled=false&isClosed=false`,{
                     headers:{
                         "Authorization":this.token
                     }
@@ -206,7 +193,7 @@ export default{
             }
             break;
             case "已結案":{ 
-                const r3 = await fetch(this.$root.$host+`/api/impressions?isClosed=${true} `,{
+                const r3 = await fetch(this.$root.$host+`/api/impressions?isClosed=true `,{
                     headers:{
                         "Authorization":this.token
                     }
@@ -220,7 +207,7 @@ export default{
             }
             break;
             case "回診日期":{
-                const r3 = await fetch(this.$root.$host+`/api/impressions?appointmentDateFrom=${start_date}&appointmentDateTo=${end_date}` ,{
+                const r3 = await fetch(this.$root.$host+`/api/impressions?appointmentDateFrom=${start_date}&appointmentDateTo=${end_date}&isClosed=false` ,{
                     headers:{
                         "Authorization": this.token
                     }
@@ -234,7 +221,7 @@ export default{
             }
             break;
             case "未結案":{
-                const r3 = await fetch(`${this.$root.$host}/api/impressions?isClosed=${false}` ,{
+                const r3 = await fetch(`${this.$root.$host}/api/impressions?isClosed=false` ,{
                     headers:{
                         "Authorization": this.token
                     }

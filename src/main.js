@@ -7,7 +7,7 @@ Vue.config.productionTip = false
 Vue.prototype.$accessToken = null;
 Vue.prototype.$refreshToken = null;
 Vue.prototype.$role = "";
-Vue.prototype.$host = "https://dits.stavhaygn.tw:443";
+Vue.prototype.$host = "https://dits.stavhaygn.tw";
 
 localStorage.removeItem("isLogin");
 localStorage.removeItem('name')
@@ -30,8 +30,8 @@ Vue.prototype.$refresh = async function () {
   Vue.prototype.$accessToken = access_token;
   Vue.prototype.$refreshToken = refresh_token;
 
-  console.log("New_access_token:" + access_token);
-  console.log("New_refresh_token:" + refresh_token);
+  //console.log("New_access_token:" + access_token);
+  //console.log("New_refresh_token:" + refresh_token);
 };
 
 Vue.prototype.$refreshT = async function startTime(){
@@ -48,6 +48,7 @@ Vue.prototype.$refreshT = async function startTime(){
   countdown();
 }
 
+router.mode="history"
 
 new Vue({
   router,

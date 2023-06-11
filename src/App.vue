@@ -6,7 +6,7 @@
       <router-link to="/receive">進口</router-link> |
       <router-link to="/search">查詢</router-link> |
       <router-link to="/closed">結案</router-link> |
-      <router-link to="/register_tech">註冊</router-link> |
+      <!-- <router-link to="/register_tech">註冊</router-link> | -->
       <router-link to="/">登入</router-link> |
       <router-link v-if="inviteView" to="/invite">邀請</router-link>
       <!-- <router-link to="/">回饋</router-link> | -->
@@ -140,13 +140,13 @@ nav a:nth-child(6):hover ~ .animation {
   width: 110px;
   left: 550px;
 }
-nav a:nth-child(7) {
+/* nav a:nth-child(7) {
   width: 110px;
-}
-nav a:nth-child(7):hover ~ .animation {
+} */
+/* nav a:nth-child(7):hover ~ .animation {
   width: 110px;
   left: 660px;
-}
+} */
 .t1{
   font-size: 45px;
   text-transform: none;

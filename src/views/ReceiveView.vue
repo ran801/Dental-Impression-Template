@@ -25,6 +25,8 @@
         <div class="div1">
             <form style="position: relative; left: 700px; top: 100px;">
                 <input type="button" value="掃描" class="btn3" @click="receive_scan()">   
+                <input type="button" value="確認" class="btn4" @click="upload()">   
+                
                 <div class="txt" id="ntag">{{ntag}}</div>
                 <div class="txt" id="ntag2">{{ntag2}}</div>
             </form>
@@ -55,11 +57,12 @@
 </template>
 
 <script>
+import Swal from 'sweetalert2'
 export default({
     data(){
         return{
             data:[
-                { id: 'laboratoryName', label: '運送狀態', value: '' },
+                { id: 'status', label: '運送狀態', value: '' },
                 { id: 'dentistName', label: '醫師', value: '' },
                 { id: 'patientName', label: '病人姓名', value: '' },
                 { id: 'medicalRecordNumber', label: '病歷號', value: '' },
@@ -94,97 +97,115 @@ export default({
         const date = new Date(dataTime);
         return date.toISOString().slice(0,10);
         },
+
         async receive_scan(){
-            const r = await fetch("http://127.0.0.1:20000/uid");
-            const text = await r.text();
-            console.log (text)
-            this.ntag = text
-
-            if (r.status == 404 ){
-                this.ntag2 = "掃描失敗";
-                this.laboratoryName="";
-                this.dentistName="";
-                this.patientName="";
-                this.medicalRecordNumber="";
-                this.workOrderNumber="";
-                this.sentDate="";
-                this.receivedDate="";
-                this.appointmentDate="";
+            if (this.token == "Bearer null"){
+                Swal.fire("請先登入")
             }else{
-                const r2 = await fetch(this.$root.$host+`/api/ntags/${text}`,{
-                    headers:{
-                        "Authorization":this.token
-                    }
-                });
-                const text2 = await r2.status;
-                console.log(text2);
+                for (let item of this.data) {
+                  item.value = ''; 
+                }
+                const r = await fetch("http://127.0.0.1:20000/uid");
+                const text = await r.text();
+                console.log (r.status)
+                this.ntag = text
 
-                if (r2.status ==404){
-                this.ntag2 = "尚未建立的ntag";
-                this.laboratoryName="";
-                this.dentistName="";
-                this.patientName="";
-                this.medicalRecordNumber="";
-                this.workOrderNumber="";
-                this.sentDate="";
-                this.receivedDate="";
-                this.appointmentDate="";
+                if (r.status == 404 ){
+                    this.ntag = "Read failed"
+                    this.ntag2 = "掃描失敗";
+                    this.data.forEach(item=>{
+                        item.value ='';
+                    });
+                    this.dataList=[];
                 }else{
-                    const r3 = await fetch(`${this.$root.$host}/api/impressions?ntagUid=${text}`,{
+                    const r2 = await fetch(`${this.$root.$host}/api/ntags/${text}`,{
                         headers:{
                             "Authorization":this.token
                         }
                     });
-                    const text3 = await r3.json()
-                    console.log(r3.status)  
-                    console.log(text3)
-                    if (r3.status ==404){
-                        this.ntag2  ="尚未建立的牙模";
-                        this.laboratoryName="";
-                        this.dentistName="";
-                        this.patientName="";
-                        this.medicalRecordNumber="";
-                        this.workOrderNumber="";
-                        this.sentDate="";
-                        this.receivedDate="";
-                        this.appointmentDate="";
-                    }else{
-                        this.ntag2 = "已建立的牙模";
-                        this.data.forEach(item => {
-                        item.value = text3[0][item.id];
+                    const text2 = await r2.status;
+                    console.log(text2);
+
+                    if (r2.status ==404){
+                        this.data.forEach(item=>{
+                        item.value ='';
                         });
-                        const id = text3[0].id
-                        const stageId = parseInt(this.stageId)
+                        this.dataList=[];
+                    }else{
+                        const r3 = await fetch(`${this.$root.$host}/api/impressions?ntagUid=${text}`,{
+                            headers:{
+                                "Authorization":this.token
+                            }
+                        });
+                        const text3 = await r3.json()
+                        console.log(r3.status)  
+                        console.log(text3)
+                        if (r3.status ==404){
+                            this.ntag2  ="尚未建立的牙模";
+                            this.data.forEach(item=>{
+                                item.value ='';
+                            });
+                            this.dataList=[];
+                        }else{
+                            this.ntag2 = "已建立的牙模";
+                            this.data.forEach(item => {
+                            item.value = text3[0][item.id];
+                            });
+                            const id = text3[0].id
 
+                            const r5 = await fetch(`${this.$root.$host}/api/impressions/${id}/transferRecords`,{
+                                headers:{
+                                    "Authorization":this.token
+                                }
+                            });
+                            const text5 = await r5.json();
+                            console.log(text5);
+                            this.dataList=text5;
+                            console.log(text)
+                            }
+                        }
+        
+                }
+            }
+        },
+        async upload(){
+            const stageId = parseInt(this.stageId);
+            if (this.token == "Bearer null"){
+                Swal.fire("請先登入")
+            }else{
+                console.log(this.ntag)
+                if(this.ntag1 =="Read failed" || this.ntag1 =="尚未掃描"){
+                    Swal.fire("無資料")
+                }else{
+                        const r =await fetch(`${this.$root.$host}/api/impressions?ntagUid=${this.ntag}`,{
+                            headers:{
+                                "Authorization":this.token,
+                            }
+                        });
+                        const data = await r.json();
+                        const id = data[0].id;
+                        console.log("id:",id)
 
-                        const r4 = await fetch(this.$root.$host+`/api/impressions/${id}/transferRecords`,{
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": this.token
+                        const r2 = await fetch(`${this.$root.$host}/api/impressions/${id}/transferRecords`,{
+                            method:"POST",
+                            headers:{
+                                "Content-Type":"application/json",
+                                "Authorization":this.token
                             },
                             body: JSON.stringify({
                                 "type":"received",
                                 "stageId":stageId
                             })
                         });
-                        const text4 = await r4.json();
-                        console.log(text4);
-                        this.ntag2 = "成功接收牙模";
-
-                        const r5 = await fetch(this.$root.$host+`/api/impressions/${id} /transferRecords`,{
-                            headers:{
-                                "Authorization":this.token
-                            }
-                        });
-                        const text5 = await r5.json();
-                        console.log(text5);
-                        this.dataList=text5;
+                        console.log("r2:",r2.status)
+                        if (r2.status== 201){
+                            Swal.fire("成功接收牙模")
+                        }else{
+                            Swal.fire("接收失敗")
                         }
-                    }
-       
+                    }   
             }
-    }
+        }
     }
     
 
@@ -223,6 +244,21 @@ export default({
     .btn3:active{
         background-color:#6eb38d;
       }
+    .btn4{
+        width: 120px;
+        height: 40px;
+        background-color:#cf4b5d;
+        border: none;
+        border-radius:15px;
+        font-size: 18px;
+        outline:none;
+        margin-left: 30px;
+        margin-bottom: 10px;
+        font-weight:bold
+    }
+    .btn4:active{
+        background-color:#b12f41;
+    }
     .txt{
         width: 250px;
         font-size: 18px;

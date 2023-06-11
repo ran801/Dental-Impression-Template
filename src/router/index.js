@@ -7,8 +7,8 @@ import ReceiveView from '../views/ReceiveView.vue'
 import SearchView from '../views/SearchView.vue'
 import ClosedView from '../views/ClosedView.vue'
 import ModifyView from '../views/ModifyView.vue'
-import RegisterView from '../views/RegisterView.vue'
-import Register_techView from '../views/Register_techView.vue'
+// import RegisterView from '../views/RegisterView.vue'
+// import Register_techView from '../views/Register_techView.vue'
 import FormView from '../views/FormView.vue'
 import InviteView from '../views/InviteView.vue'
 import FindNoPage from '../views/FindNoPage.vue'
@@ -52,16 +52,16 @@ const routes = [
     name:"ModifyView",
     component: ModifyView
   },
-  {
-    path:"/register",
-    name:"RegisterView",
-    component: RegisterView
-  },
-  {
-    path:"/register_tech",
-    name:"Register_techView",
-    component: Register_techView
-  },
+  // {
+  //   path:"/register",
+  //   name:"RegisterView",
+  //   component: RegisterView
+  // },
+  // {
+  //   path:"/register_tech",
+  //   name:"Register_techView",
+  //   component: Register_techView
+  // },
   {
     path:"/form",
     name:"FormView",

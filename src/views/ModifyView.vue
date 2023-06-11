@@ -7,7 +7,7 @@
         </head>
         <div class="t2">
             修改寄送紀錄
-            <span class="t5" v-if="teeth_model">牙模編號
+            <span class="t5">牙模編號
                 <span id="teeth_model_id">{{ $route.params.id}}
                 </span>
             </span>
@@ -16,14 +16,13 @@
             <colgroup></colgroup>
             <tr>
                 <td>運送狀態</td>
-                <!-- 尚未完成 -->
-                <td v-if="teeth_model">{{teeth_model.status}}</td>
+                <td>{{status}}</td>
             </tr>
             <tr>
                 <td>醫師</td>
                 <td>
                     <select v-model="dentistName" @change="dentistChange"  style=" height:50px ; width: 300px;">
-                    <option v-for="user in usernames" :key="user.id" :value="user">{{user.username}}</option>
+                        <option v-for="user in usernames" :key="user.id" :value="user">{{user.username}}</option>
                     </select>
                 </td>
             </tr>
@@ -65,8 +64,8 @@
             <tr >
                 <td>技工所</td>
                     <td>
-                        <select class="select" id="laboratory" v-model="laboratoryName" @change="laboratoryChange">
-                            <option v-for="item in list1" :key="item.id" :value="item" :selected="item.name === laboratoryName">{{item.name}}</option>
+                        <select class="select" id="laboratory" v-model="laboratory" @change="laboratoryChange">
+                            <option v-for="item in list1" :key="item.id" :value="item" >{{item.name}}</option>
                         </select>
                     </td>
             </tr>
@@ -77,7 +76,6 @@
         </div>
          <img src="https://img.alicdn.com/imgextra/i2/78424090/TB2JqHbbaSWBuNjSsrbXXa0mVXa_!!78424090.jpg_400x400Q50s50.jpg_.webp" alt="image" class="BIG" id="BIG" >
          <div id="SMALL" class="slider">
-         <img v-for="image in images" :key="image" :src="'/static/uploads/' + image + '.jpg'" :alt="'image'" :id="'id' + image" @click="select('id' + image)">
          </div>
         <div style="position: absolute;left: 1300px;top:250px;">
             <table class="table2" id="table2">
@@ -91,10 +89,10 @@
                 </thead>
                 <tbody class="tbody2">
                     <tr v-for="(transfer,index) in transfers" :key="index">
-                        <td width="150px">{{transfer.action}}</td>
-                        <td width="250px">{{transfer.date}}</td>
-                        <td width="180px">{{transfer.step||""}}</td>
-                        <td width="180px">{{transfer.transactor}}</td>
+                        <td width="150px">{{transfer.type}}</td>
+                        <td width="250px">{{formatData(transfer.transferDateTime)}}</td>
+                        <td width="180px">{{transfer.stage||""}}</td>
+                        <td width="180px">{{transfer.transactorName}}</td>
                     </tr>
                 </tbody>
             </table>
@@ -112,33 +110,24 @@ import Swal from 'sweetalert2'
 export default {
     mounted(){
             this.$root.$refreshT();
-            this.docterselect();    
+            this.docterSelect();    
+            this.laboratorySelect();
             this.id = this.$route.params.id;
-            this.itemData = this.$route.query
             this.searchData();
-            
-            this.laboratoryName = this.itemData.laboratoryName
-            
+                        
             console.log('資料ID:',this.id);
-            console.log('傳遞的資料:', this.itemData )
-            console.log(this.laboratoryName)
+            console.log(this.laboratory)
             
 
     },
     data() {
         return{
-            teeth_model:{},
             selectedLab:null,
-            list1:[
-                { id: 4, name: '顏氏' },
-                { id: 5, name: '鴻冠' },
-                { id: 6, name: '良曄' }
-            ],
-            images:[],
+            list1:[],
             transfers:[],
             doctor:'',
             token:`Bearer `+ this.$root.$accessToken,
-            dentistName:'',
+            dentistName:null,
             dentistPersonnelNumber:'',
             patientName:'',
             medicalRecordNumber:'',
@@ -151,19 +140,25 @@ export default {
             itemData:[],
             usernames: [],
             userIds:[],
-            laboratoryName:'',
+            laboratory:null,
+            status:'',
             
         }
     },
     
     methods:{
+        formatData(dataTime){
+            const data = new Date(dataTime);
+            return data.toISOString().slice(0,10);
+        },
+
         dentistChange(){
             console.log(this.dentistName.id)
         },
         laboratoryChange(){
-            console.log(this.laboratoryName.name , this.laboratoryName.id)
+            console.log(this.laboratory.name , this.laboratory.id)
         },
-        async docterselect(){
+        async docterSelect(){
             try{
                 const r = await fetch(`${this.$root.$host}/api/users?role=dentist`,{
                     headers:{
@@ -173,32 +168,71 @@ export default {
                 const data = await r.json();
                 const usernames = data.map(item => ({id: item.id , username:item.username}));
                 this.usernames = usernames;
-                console.log(usernames)
-                console.log (data)
+                console.log("doctor names:",usernames)
             }catch(error){
                 console.error(error);
             }
         },
+        
+        async laboratorySelect(){
+            try{
+                const r = await fetch(`${this.$root.$host}/api/facilities?facilityType=laboratory`,{
+                    headers:{
+                        "Authorization":this.token
+                    }
+                });
+                const data = await r.json();
+                const list1 = data.map(item => ({id:item.id , name:item.name}));
+                this.list1 = list1;
+                console.log("laboratory list:",list1)
+            }catch(error){
+                console.error(error)
+            }
+        },
+
         async searchData(){
-            console.log(this.id)
-            const dataSearch =  await fetch(`${this.$root.$host}/api/impressions/${this.id}`,{
+            const r =  await fetch(`${this.$root.$host}/api/impressions/${this.id}`,{
                 headers:{
                     "Authorization":this.token,
                 }
             });
-            const data = dataSearch.json();
-            this.dentistName = data.dentistName;
+            const data = await r.json();
+            const dentist = this.usernames.find(user=>user.username === data.dentistName);
+            console.log("dentist",dentist)
+            if(dentist){
+                this.$nextTick(()=>{
+                    this.dentistName = dentist;
+                })
+            }
+            const laboratory = this.list1.find(item=>item.name === data.laboratoryName);
+            console.log("laboratory:",laboratory)
+
+            if(laboratory){
+                this.$nextTick(()=>{
+                    this.laboratory = laboratory
+                })
+            }
+            this.status = data.status
             this.patientName = data.patientName;
             this.medicalRecordNumber = data.medicalRecordNumber;
             this.workOrderNumber = data.workOrderNumber;
             this.sentDate = data.sentDate;
+            this.stage = data.stage;
             this.receivedDate = data.receivedDate;
             this.appointmentDate = data.appointmentDate;
+            console.log(data)
 
-            console.log(dataSearch.json())
+            const r2 = await fetch (`${this.$root.$host}/api/impressions/${this.id}/transferRecords`,{
+                headers:{
+                    "Authorization":this.token
+                }
+            });
+            const data2 = await r2.json()
+            console.log(data2)
+            this.transfers=data2;
         },
-        async save(){
 
+        async save(){
             const r_dentist = await fetch(`${this.$root.$host}/api/users/${this.dentistName.id}`,{
                 headers:{
                     "Authorization":this.token
@@ -206,13 +240,17 @@ export default {
             });
             const dentistData = await r_dentist.json();
 
+            if(this.appointmentDate === '0001-01-01'){
+                this.appointmentDate =null ;
+            }
+
             const dentistPersonnelNumber = dentistData.personnelNumber
             const patientName = this.patientName
             const medicalRecordNumber = this.medicalRecordNumber
             const workOrderNumber = this.workOrderNumber
             const appointmentDate = this.appointmentDate
-            const laboratoryId = this.laboratoryName.id
-
+            const laboratoryId = this.laboratory.id
+            
             const response = await fetch(`${this.$root.$host}/api/impressions/${this.id}`,{
                 method: "PATCH",
                 headers:{

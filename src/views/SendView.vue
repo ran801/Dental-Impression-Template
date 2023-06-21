@@ -20,6 +20,7 @@
         <form style="position: absolute; left: 560px; top:250px;">``
             <input type="button" value="掃描" class="btn1" @click="nTag_scan()">
             <input type="button" value="確認" class="btn4" @click="upload()">
+            <input type="button" value="確認" class="btn1" @click="record()">
             <div class ="txt" id="ntag">{{ntag1}}</div>
             <div class ="txt" id="ntag2">{{ntag2}}</div>
         </form>
@@ -191,6 +192,17 @@ export default {
         Swal.fire('送出成功')
         }
       },
+      async record(){
+        const r = await fetch("http://127.0.0.1:20000/uid");
+        if (r.status ===404){
+          this.ntag1 = "read failed"
+        }else{
+          const text = await r.text();
+          const text2 = await text.substring(2,6)
+          this.ntag1 = text2
+          this.ntag2 = text
+        }
+      }
 
     }
     
@@ -199,8 +211,6 @@ export default {
 </script>
 
 <style scoped>
-/* @import url("https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.css");
-@import url("https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick-theme.css"); */
 
     .t2{
         font-size: 36px;

@@ -34,6 +34,19 @@
                 <td>病人回診日</td>
                 <td id="return_date">{{appointmentDate}}</td>
             </tr>        
+            <tr>
+                <td>回饋表單</td>
+                <td>
+                    <template>
+                        <router-link :to="{
+                            name: 'FormView',
+                            params:{id: id2}
+                        }" >
+                            {{this.isClosed ? '填寫': ''}}
+                        </router-link>
+                    </template>
+                </td>
+            </tr>
         </table>
         <div class="div1">
             <form style="position: relative;left: 800px;top: 100px;">
@@ -61,7 +74,11 @@ export default{
             sentDate:"",
             receivedDate:"",
             appointmentDate:"",
+            impressionsId:"",
             token: `Bearer `+ this.$root.$accessToken,
+            id2:"",
+            impressionId:"",
+            isClosed:false
         }
     },
     mounted(){
@@ -103,48 +120,48 @@ export default{
                                 "Authorization":this.token
                             }
                         });
-                        const text4 = await r3.status;
-                        console.log(text4);
-                        
-                        if (r3.status==200){
-                            this.ntag2 = "已建立的牙模"
+                        console.log("r3:",r3.status);
+                            if (r3.status==200){
+                                this.ntag2 = "已建立的牙模"
 
-                            const text3 =await r3.json();
-                            console.log(text3);
-                            const {status} = text3[0];
-                            const {dentistName} = text3[0];
-                            const {patientName} = text3[0];
-                            const {medicalRecordNumber} = text3[0];
-                            const {workOrderNumber} = text3[0];
-                            const {receivedDate} = text3[0];
-                            const {sentDate} = text3[0];
-                            const {appointmentDate} = text3[0];
-                        
-                            if (status ==null ){
-                                this.status = "" ;
+                                const text3 =await r3.json();
+                                console.log(text3);
+
+                                const {status} = text3[0];
+                                const {dentistName} = text3[0];
+                                const {patientName} = text3[0];
+                                const {medicalRecordNumber} = text3[0];
+                                const {workOrderNumber} = text3[0];
+                                const {receivedDate} = text3[0];
+                                const {sentDate} = text3[0];
+                                const {appointmentDate} = text3[0];
+                            
+                                if (status ==null ){
+                                    this.status = "" ;
+                                }else{
+                                    this.status = status;
+                                }
+                                this.dentistName = dentistName==null ? "" : dentistName;
+                                this.patientName = patientName ==null ? "" : patientName;
+                                this.medicalRecordNumber = medicalRecordNumber==null ? "" : medicalRecordNumber;
+                                this.workOrderNumber = workOrderNumber==null ? "" : workOrderNumber;
+                                this.receivedDate = receivedDate==null ? "" : receivedDate;
+                                this.sentDate = sentDate==null ? "" : sentDate;
+                                this.receivedDate = receivedDate==null ? "" : receivedDate;
+                                this.sentDate = sentDate==null ? "":sentDate;
+                                this.appointmentDate = appointmentDate==null ? "" : appointmentDate;
                             }else{
-                                this.status = status;
+                                this.ntag2 = "尚未建立的牙模";
+                                this.status = "";
+                                this.dentistName = "";
+                                this.patientName="";
+                                this.medicalRecordNumber = "";
+                                this.workOrderNumber= "";
+                                this.sentDate="";
+                                this.receivedDate="";
+                                this.appointmentDate="";
                             }
-                            this.dentistName = dentistName==null ? "" : dentistName;
-                            this.patientName = patientName ==null ? "" : patientName;
-                            this.medicalRecordNumber = medicalRecordNumber==null ? "" : medicalRecordNumber;
-                            this.workOrderNumber = workOrderNumber==null ? "" : workOrderNumber;
-                            this.receivedDate = receivedDate==null ? "" : receivedDate;
-                            this.sentDate = sentDate==null ? "" : sentDate;
-                            this.receivedDate = receivedDate==null ? "" : receivedDate;
-                            this.sentDate = sentDate==null ? "":sentDate;
-                            this.appointmentDate = appointmentDate==null ? "" : appointmentDate;
-                        }else{
-                            this.ntag2 = "尚未建立的牙模";
-                            this.status = "";
-                            this.dentistName = "";
-                            this.patientName="";
-                            this.medicalRecordNumber = "";
-                            this.workOrderNumber= "";
-                            this.sentDate="";
-                            this.receivedDate="";
-                            this.appointmentDate="";
-                        }
+                        
                     }
                 else{
                     this.ntag2 = "尚未建立ntag";
@@ -177,14 +194,41 @@ export default{
                 console.log(text3);
                 const {id} = text3[0]
                 console.log(id);
-                const impressionId = id;
-                const r4 = await fetch (`${this.$root.$host}/api/impressions/${impressionId}/close`,{
+                this.impressionsId = id
+                //id2用於填寫feedback
+                this.id2 = this.impressionsId
+                console.log(this.impressionsId)
+                
+                //尋找牙模的醫生和牙技師
+                const r5 = await fetch(`${this.$root.$host}/api/impressions/${this.impressionsId}`,{
+                    headers:{
+                        "Authorization":this.token
+                    }
+                })
+                const data5 = await r5.json();
+                this.isClosed = data5.isClosed
+                const dentist = data5.dentistName
+                
+
+                const r6 = await fetch(`${this.$root.$host}/api/impressions/${this.impressionsId}/transferRecords`,{
+                    headers:{
+                        "Authorization":this.token
+                    }
+                })
+                const data6 = await r6.json()
+                const transactorName = data6[0].transactorName
+                console.log(data6)
+
+               
+                // 結案
+                const r4 = await fetch (`${this.$root.$host}/api/impressions/${this.impressionsId}/close`,{
                     method: "PUT",
                     headers:{
                         "Authorization": this.token
                     }
                 });
                 console.log("r4:",r4.status)
+
                 this.ntag2 ="已清除牙模資料"
                 this.status = "";
                 this.dentistName = "";
@@ -194,26 +238,84 @@ export default{
                 this.sentDate="";
                 this.receivedDate="";
                 this.appointmentDate="";
-            //取得自己的id
-            // const r5 = await fetch(`${this.$root.$host}/api/users/me`,{
-            //     headers:{
-            //         "Authorization": this.token
-            //     }
-            // })
-            //const data5 = r5.json();
-            //const userId = data5.id;
-            //發送表單
-            // const r6 = await fetch(`${this.$root.$host}/api/notifications`,{
-            //     headers:{
-            //         "Content-Type": "application/json",
-            //         "Authorization":this.token
-            //     },
-            //     body: JSON.stringify({
-            //         "receiverId":userId,
-            //         "message":"發送表單網址"
-            //     })
-            // })
-            // console.log(r6.status)
+                this.isClosed = true
+                // 取得自己的id並發送表單
+                console.log(this.id2 , this.isClosed)
+                console.log("dentist:",dentist)
+                console.log("transactorName:",transactorName)
+
+
+
+
+                // const r7 = await fetch(`${this.$root.$host}/api/users/me`,{
+                //     headers:{
+                //         "Authorization": this.token
+                //     }
+                // })
+                // const data7 = await r7.json();
+                // const userId = data7.id;
+                
+                const r8 = await fetch(`${this.$root.$host}/api/users?role=dentist`,{
+                    headers:{
+                        "Authorization":this.token
+                    }
+                })
+                const data8 = await r8.json();
+                
+                const matchDentist = data8.find(item => item.username === dentist);
+                const dentistId = matchDentist? matchDentist.id:null;
+                console.log(data8)                
+                console.log(matchDentist)    
+                console.log(dentistId)
+
+                const r9 = await fetch(`${this.$root.$host}/api/users?role=dental_technician`,{
+                    headers:{
+                        "Authorization":this.token
+                    }
+                })
+                const data9 = await r9.json()
+                const matchDental_technician = data9.find(item=> item.username === transactorName)
+                const dental_technicianId = matchDental_technician? matchDental_technician.id : null;
+                console.log(data9)
+                console.log(matchDental_technician)
+                console.log(dental_technicianId)
+
+                const r10 = await fetch(`${this.$root.$host}/api/notifications`,{
+                    method:"POST",
+                    headers:{
+                        "Content-Type":"application/json",
+                        "Authorization":this.token
+                    },
+                    body:JSON.stringify({
+                        "receiverId":dentistId,
+                        "message":`回饋表單網址:http://localhost:8080/#/form/${this.impressionsId}`
+                    })
+                })
+                console.log(r10.status)
+
+                const r11 = await fetch(`${this.$root.$host}/api/notifications`,{
+                    method:"POST",
+                    headers:{
+                        "Content-Type": "application/json",
+                        "Authorization":this.token
+                    },
+                    body: JSON.stringify({
+                        "receiverId":dental_technicianId,
+                        "message":`回饋表單網址:${this.$root.$host}/#/form/${this.impressionsId}`
+                    })
+                })
+                console.log(r11.status)
+
+                const r12 = await fetch(`${this.$root.$host}/api/feedbacks`,{
+                    headers:{
+                        "Content-Type":"application/json",
+                        "Authorization":this.token
+                    },
+                    body: JSON.stringify({
+                        "impressionId":this.impressionId
+                    })
+                })
+                console.log("create a feedback r12:",r12.status)
             }
     }
     },

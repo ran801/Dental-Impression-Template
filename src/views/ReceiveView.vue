@@ -73,6 +73,7 @@ export default({
                 
             ],
             stageId:'1',
+            stage:'',
             uid:'',
             ntag:'尚未掃描',
             ntag2:'尚未掃描',
@@ -152,7 +153,7 @@ export default({
                             item.value = text3[0][item.id];
                             });
                             const id = text3[0].id
-
+                            this.stage = text3[0].stage
                             const r5 = await fetch(`${this.$root.$host}/api/impressions/${id}/transferRecords`,{
                                 headers:{
                                     "Authorization":this.token
@@ -174,7 +175,7 @@ export default({
                 Swal.fire("請先登入")
             }else{
                 console.log(this.ntag)
-                if(this.ntag1 =="Read failed" || this.ntag1 =="尚未掃描"){
+                if(this.ntag =="Read failed" || this.ntag =="尚未掃描"){
                     Swal.fire("無資料")
                 }else{
                         const r =await fetch(`${this.$root.$host}/api/impressions?ntagUid=${this.ntag}`,{
@@ -200,6 +201,27 @@ export default({
                         console.log("r2:",r2.status)
                         if (r2.status== 201){
                             Swal.fire("成功接收牙模")
+                            //取得自己id並發送notify
+                            // const r5 = await fetch(`${this.$root.$host}/api/users/me`,{
+                            // headers:{
+                            //     "Authorization":this.token
+                            // }
+                            // });
+                            // const data5 = await r5.json();
+                            // const userId = data5.id
+
+                            // const r6 = await fetch(`${this.$root.$host}/api/notifications`,{
+                            // method:"POST",
+                            // headers:{
+                            //     "Content-Type":"application/json",
+                            //     "Authorization":this.token
+                            // },
+                            // body: JSON.stringify({
+                            //     "receiverId":userId,
+                            //     "message":`成功接收牙模${this.stage}`
+                            // })
+                            // });
+                            // console.log(r6.status)
                         }else{
                             Swal.fire("接收失敗")
                         }

@@ -10,9 +10,11 @@
                 <option>回診日期</option>
                 <option>已結案</option>
                 <option>未結案</option>
+                <option>序號查詢</option>
+                <option>病歷號查詢</option> 
             </select> 
         <span>
-            病歷號<input type="text" id="record_number" v-model="record_number" class="text">
+            序號<input type="text" id="record_number" v-model="record_number" class="text">
         </span>
         <span>
             起始日<input type="date" id="start_date" v-model="start_date" class="date" >
@@ -41,6 +43,7 @@
                     <td width="250px">送出日期</td>
                     <td width="250px">交件日期</td>
                     <td width="250px">回診日期</td> 
+                    <td width="230px">回饋表單</td>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,7 +54,7 @@
                             </div>
                         </td>
                         <td>
-                            {{ item.ntagUid ? item.ntagUid.substring(2,5) : '已結案' }}
+                            {{ item.ntagUid ? item.ntagUid.substring(2,6) : '已結案' }}
                         </td>
                         <td> 
                             <template v-if="item.isClosed">
@@ -66,17 +69,30 @@
                                 </router-link>
                             </template>
                         </td>
-                        <td>{{ item.laboratoryName !== null ? item.laboratoryName : ""}}</td>
+                        <td>{{ item.status !== null ? item.status : ""}}</td>
                         <td>{{ item.medicalRecordNumber !== null  ? item.medicalRecordNumber : "" }}</td>
                         <td>{{ item.patientName !== null ? item.patientName : "" }}</td>
                         <td>{{ item.workOrderNumber !== null ? item.workOrderNumber : "" }}</td>
-                        <td>{{ item.sentDate  }}</td>                        
+                        <td>{{ item.sentDate }}</td>                        
                         <td>{{ item.receivedDate !== null ? item.receivedDate : "" }}</td>
                         <td>{{ item.appointmentDate !== null ? item.appointmentDate : "" }}</td>
+                        <td>
+                            <template v-if ="item.isClosed">
+                                <router-link :to="{
+                                    name:'FormView',
+                                    params:{id:formId},
+                                }">
+                                連結
+                                </router-link>
+                            </template>
+                            <template v-else>
+                                尚未結案
+                            </template>
+                        </td>
                         </tr>
                 </tbody> 
             </table> 
-        </div>                                     
+        </div>  
 
     </div>
 </template>
@@ -96,10 +112,13 @@ export default{
             itemData:[],
             checkedItems:[],
             selectedItemID:null,
+            impressionId:"",
             selectedIds:[],
             item:{
                 ntagUid:''
-            }
+            },
+            formId:"",
+            formIds:[]
         };
     },
     mounted() {
@@ -126,6 +145,7 @@ export default{
     async searchrecord(){
         if (this.token =="Bearer null"){
             Swal.fire("尚未登入")
+            console.log(this.token)
         }else{
         const search = this.search;
         const record_number= this.record_number;
@@ -134,7 +154,7 @@ export default{
         console.log(this.token)
         switch (search){
             case "送出日期":{
-                const r3 = await fetch(this.$root.$host+`/api/impressions?sentDateFrom=${start_date}&sentDateTo=${end_date}&isClosed=false`,{
+                const r3 = await fetch(`${this.$root.$host}/api/impressions?sentDateFrom=${start_date}&sentDateTo=${end_date}&isClosed=false`,{
                     headers:{
                     "Authorization":this.token
                     }
@@ -146,10 +166,25 @@ export default{
                 }
                 this.items = text3;
                 
+                for(let i = 0 ; i<this.items.length; i++){
+                    const item = this.items[i]
+                    console.log(item)
+                    console.log(item.id)
+                    const r4 = await fetch(`${this.$root.$host}/api/feedbacks?impressionId=${item.id}`,{
+                        headers:{
+                            "Authorization":this.token
+                        }
+                     });
+                    const data = await r4.json()
+                    const formId = data[i].id;
+                    console.log(formId);
+                    console.log(r4.status)
+                    console.log(data)
+                }
             }
             break;
             case "交件日期":{
-                const r3 = await fetch(this.$root.$host+`/api/impressions?receivedDateFrom=${start_date}&receivedDateTo=${end_date}&isClosed=false`,{
+                const r3 = await fetch(`${this.$root.$host}/api/impressions`,{
                     headers:{
                         "Authorization":this.token
                     }
@@ -165,7 +200,7 @@ export default{
             break;
             case "序號":{
                 
-                const r3 = await fetch(this.$root.$host+`/api/impressions?workOrderNumber=${record_number}&isClosed=false`,{
+                const r3 = await fetch(`${this.$root.$host}/api/impressions?workOrderNumber=${record_number}&isClosed=false`,{
                     headers:{
                         "Authorization":this.token
                     }
@@ -179,7 +214,7 @@ export default{
             }
             break;
             case "填寫未完成":{
-                const r3 = await fetch(this.$root.$host+`/api/impressions?sentDateFrom=${start_date}&sentDateTo=${end_date}&allFieldsFilled=false&isClosed=false`,{
+                const r3 = await fetch(`${this.$root.$host}/api/impressions?sentDateFrom=${start_date}&sentDateTo=${end_date}&allFieldsFilled=false&isClosed=false`,{
                     headers:{
                         "Authorization":this.token
                     }
@@ -193,7 +228,7 @@ export default{
             }
             break;
             case "已結案":{ 
-                const r3 = await fetch(this.$root.$host+`/api/impressions?isClosed=true `,{
+                const r3 = await fetch(`${this.$root.$host}/api/impressions?isClosed=true `,{
                     headers:{
                         "Authorization":this.token
                     }
@@ -204,10 +239,35 @@ export default{
                     Swal.fire("查無資料")
                 }
                 this.items = text3;
+                for(let i = 0 ; i<this.items.length; i++){
+                        const item = this.items[i]
+                        console.log(item)
+                        console.log("item.id:",item.id)
+                        const formIdMap=[]
+                        const promises = this.items.map(async(item)=>{
+                            const r4 = await fetch(`${this.$root.$host}/api/feedbacks?impressionId=${item.id}`,{
+                                headers:{
+                                    "Authorization":this.token
+                                }
+                            });
+                            const data = await r4.json()
+                            if (data.length > 0) {
+                                this.formId = data[0].id;
+                                formIdMap[item.id] = this.formId;
+                            } 
+                            console.log(this.formId);
+                            console.log(r4.status)
+                            console.log(data)
+                            console.log(i)
+                            });
+                        await Promise.all(promises)
+                        
+                        console.log(formIdMap);
+                    }
             }
             break;
             case "回診日期":{
-                const r3 = await fetch(this.$root.$host+`/api/impressions?appointmentDateFrom=${start_date}&appointmentDateTo=${end_date}&isClosed=false` ,{
+                const r3 = await fetch(`${this.$root.$host}/api/impressions?appointmentDateFrom=${start_date}&appointmentDateTo=${end_date}&isClosed=false` ,{
                     headers:{
                         "Authorization": this.token
                     }
@@ -218,6 +278,21 @@ export default{
                     Swal.fire("查無資料")
                 }
                 this.items = text3;
+                                for(let i = 0 ; i<this.items.length; i++){
+                    const item = this.items[i]
+                    console.log(item)
+                    console.log(item.id)
+                    const r4 = await fetch(`${this.$root.$host}/api/feedbacks?impressionId=${item.id}`,{
+                        headers:{
+                            "Authorization":this.token
+                        }
+                     });
+                    const data = await r4.json()
+                    const formId = data[i].id;
+                    console.log(formId);
+                    console.log(r4.status)
+                    console.log(data)
+                }
             }
             break;
             case "未結案":{
@@ -265,6 +340,8 @@ export default{
                             });
                             const text = await r.json();
                             console.log(text)
+                            console.log(r.status)
+
                             Swal.fire(
                                '刪除成功!',
                                '你的紀錄已被刪除.',
@@ -300,8 +377,8 @@ export default{
     }
     .table{
         align: center;
-        position: absolute;left: 100px;top: 250px;
-        width: 1800px;
+        position: absolute;left: 20px;top: 250px;
+        width: 2000px;
         font-size: 32px; 
     }
     .table td{

@@ -70,7 +70,7 @@ const routes = [
   //   component: Register_techView
   // },
   {
-    path:"/form",
+    path:"/form/:id",
     name:"FormView",
     component: FormView,
     meta:{title:'FormPage'}
@@ -104,6 +104,8 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
+    
+
     if (to.meta.title) {
         document.title = to.meta.title
     }

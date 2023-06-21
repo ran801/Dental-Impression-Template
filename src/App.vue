@@ -8,7 +8,7 @@
       <router-link to="/closed">結案</router-link> |
       <!-- <router-link to="/register_tech">註冊</router-link> | -->
       <router-link to="/">登入</router-link> |
-      <router-link v-if="inviteView" to="/invite">邀請</router-link>
+      <router-link v-if="inviteView" to="/invite">註冊</router-link>
       <!-- <router-link to="/">回饋</router-link> | -->
 
       <div class="animation"></div>

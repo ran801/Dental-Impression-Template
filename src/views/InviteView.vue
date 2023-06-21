@@ -5,7 +5,7 @@
       <template>
           <div class="user-details">
               <div class="title">使用者註冊</div>
-            <form class = "form" >
+            <form class = "form" @submit.prevent="register">
               <div v-show="showButton">
                 <div class="input-box">
                   <div class="details">單位：</div>
@@ -68,7 +68,7 @@
                   </div>                  
                 </div>
               <div class="button">
-                <input type="submit" value="確認" v-show="showButton" @click="next">
+                <button type="button" value="確認" v-show="showButton" @click="next">確認</button>
               </div>
             </form>          
           </div>
@@ -127,9 +127,8 @@ export default {
         console.log(this.inviteCode)
         console.log(data)
         console.log(data.inviteCode)
-
-
         this.showButton=false;  
+        this.$refs.form.submit();
       }
     },
 

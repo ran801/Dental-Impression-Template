@@ -41,11 +41,14 @@ export default({
     mounted(){
         const isLogin= localStorage.getItem('isLogin');
         this.name = localStorage.getItem('name');
+        
         if(isLogin){
             this.isLogin = true;
             this.name = localStorage.getItem('name');
+            
         }else{
             this.isLogin = false;
+            
         }
     },
     data(){
@@ -106,13 +109,13 @@ export default({
             //根據UserRole取得對應的scope(權限)
             switch(role){
                 case 'admin':
-                    this.scope = "users:read users:create users:delete ntags:read ntags:create ntags:delete facilities:read facilities:create facilities:delete stages:read stages:create stages:delete impressions:read impressions:create impressions:update impressions:delete transferRecords:read transferRecords:create notifications:register  notifications:send users:invite feedbacks:create feedbacks:read feedbacks:update feedbacks:delete";
+                    this.scope = "users:read users:create users:delete ntags:read ntags:create ntags:delete facilities:read facilities:create facilities:delete stages:read stages:create stages:delete impressions:read impressions:create impressions:update impressions:delete transferRecords:read transferRecords:create notifications:register  notifications:send users:invite feedbacks:create feedbacks:read feedbacks:update feedbacks:delete user:facility:update";
                     break;
                 case 'dentist':
-                    this.scope = "impressions:read transferRecords:read notifications:register  feedbacks:read feedbacks:update";
+                    this.scope = "impressions:read transferRecords:read notifications:register  feedbacks:read feedbacks:update user:facility:update";
                     break;
                 case 'dental_technician':
-                    this.scope = "users:read users:create users:delete ntags:read ntags:create facilities:read facilities:create facilities:delete stages:read stages:create stages:delete impressions:read impressions:create impressions:update transferRecords:read transferRecords:create notifications:register notifications:send users:invite feedbacks:create feedbacks:read feedbacks:update feedbacks:delete";
+                    this.scope = "users:read users:create users:delete ntags:read ntags:create facilities:read facilities:create facilities:delete stages:read stages:create stages:delete impressions:read impressions:create impressions:update transferRecords:read transferRecords:create notifications:register notifications:send users:invite feedbacks:create feedbacks:read feedbacks:update feedbacks:delete user:facility:update";
                     break;
                 case 'dental_laboratory_technician':
                     this.scope = "stages:read impressions:read transferRecords:read transferRecords:create";
@@ -184,6 +187,7 @@ export default({
                             this.access_token=access_token
                             Vue.prototype.$accessToken= access_token
                             Vue.prototype.$refreshToken = refresh_token
+                            console.log(localStorage.getItem("isLogin"))
                             console.log("role:",localStorage.getItem("role")) 
                             console.log("accessToken:"+Vue.prototype.$accessToken)
                             console.log("refreshToken:"+Vue.prototype.$refreshToken)
@@ -223,6 +227,7 @@ export default({
             }
         }else{
             Swal.fire('帳號密碼錯誤');
+            console.log(this.access_token)
         }
        },
        
@@ -242,7 +247,7 @@ export default({
         async update(){
             await Swal.fire({
                 title:'更新密碼資訊',
-                text:'舊密碼為：`${this.oldPassword}`<br> 新密碼為：`${this.newPassword}`',
+                text:`舊密碼為：${this.oldPassword} \n 新密碼為：${this.newPassword}`,
                 icon:"question",
                 showCancelButton:true,
                 confirmButtonText:'確認',

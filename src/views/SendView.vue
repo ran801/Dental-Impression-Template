@@ -20,7 +20,7 @@
         <form style="position: absolute; left: 560px; top:250px;">``
             <input type="button" value="掃描" class="btn1" @click="nTag_scan()">
             <input type="button" value="確認" class="btn4" @click="upload()">
-            <input type="button" value="確認" class="btn1" @click="record()">
+            <!-- <input type="button" value="確認" class="btn1" @click="record()"> -->
             <div class ="txt" id="ntag">{{ntag1}}</div>
             <div class ="txt" id="ntag2">{{ntag2}}</div>
         </form>
@@ -251,6 +251,8 @@ export default {
         border-radius:15px;
         font-size: 18px;
         outline:none;
+        font-weight:bold
+        
       }
       .btn1:active{
         background-color:#6eb38d;

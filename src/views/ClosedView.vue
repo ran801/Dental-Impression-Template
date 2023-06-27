@@ -342,6 +342,8 @@ export default{
         border-radius:15px;
         font-size: 18px;
         outline:none;
+        font-weight:bold
+
       }
     .btn3:active{
         background-color:#6eb38d;
@@ -355,6 +357,7 @@ export default{
         font-size: 18px;
         outline:none;
         margin-left: 30px;
+        font-weight:bold
       }
     .btn4:active{
         background-color:#6eb38d;

@@ -262,6 +262,8 @@ export default({
         border-radius:15px;
         font-size: 18px;
         outline:none;
+        font-weight:bold
+        
       }
     .btn3:active{
         background-color:#6eb38d;

@@ -305,6 +305,8 @@ export default({
         font-size: 18px;
         margin:auto;
         outline:none;
+        font-weight:bold
+
       }
       .btn:active{
         background-color:#6eb38d;
@@ -319,6 +321,8 @@ export default({
         font-size: 18px;
         margin:auto;
         outline:none;
+        font-weight:bold
+
       }
       .btn2:active{
         background-color:#6eb38d;
@@ -333,6 +337,8 @@ export default({
         font-size: 18px;
         margin:auto;
         outline:none;
+        font-weight:bold
+
       }
       .btn3:active{
         background-color:#6a84b3;
@@ -347,6 +353,8 @@ export default({
         font-size: 18px;
         margin:auto;
         outline:none;
+        font-weight:bold
+
       }
       .btn4:active{
         background-color:#6eb38d;
@@ -362,6 +370,8 @@ export default({
         font-size: 18px;
         margin:auto;
         outline:none;
+        font-weight:bold
+
       }
       .btn5:active{
         background-color:#6a84b3;

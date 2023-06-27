@@ -309,6 +309,34 @@ export default{
                 this.items = text3;
             }
             break;
+            case "序號查詢":{
+                const r3 = await fetch(`${this.$root.$host}/api/impressions?workOrderNumber=${this.record_number}`,{
+                    headers:{
+                        "Authorization":this.token
+                    }
+                });
+                const text3 = await r3.json();
+                console.log(text3)
+                if(text3 == null){
+                    Swal.fire("查無資料")
+                }
+                this.items= text3;
+            }
+            break;
+            case "病歷號查詢":{
+                const r3 = await fetch(`${this.$root.$host}/api/impressions?medicalRecordNumber=${this.record_number}`,{
+                    headers:{
+                        "Authorization":this.token
+                    }
+                });
+                const text3 = await r3.json();
+                console.log(text3)
+                if(text3 == null){
+                    Swal.fire("查無資料")
+                }
+                this.items= text3;
+            }
+            break;
         }
         }
     },
@@ -409,6 +437,8 @@ export default{
         font-size: 18px;
         outline:none;
         margin-left: 10px;
+        font-weight:bold
+        
     }
     .btn2:active{
         background-color:#6eb38d;
@@ -423,6 +453,7 @@ export default{
         font-size: 18px;
         outline:none;
         margin-left: 10px;
+        font-weight:bold
     }
     .btn3:active{
         background-color:#b12f41;

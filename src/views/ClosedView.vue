@@ -40,7 +40,7 @@
                     <template>
                         <router-link :to="{
                             name: 'FormView',
-                            params:{id: id2}
+                            params:{id: this.feedbackId}
                         }" >
                             {{this.isClosed ? '填寫': ''}}
                         </router-link>
@@ -78,7 +78,8 @@ export default{
             token: `Bearer `+ this.$root.$accessToken,
             id2:"",
             impressionId:"",
-            isClosed:false
+            isClosed:false,
+            feedbackId:"",
         }
     },
     mounted(){
@@ -199,7 +200,7 @@ export default{
                 this.id2 = this.impressionsId
                 console.log(this.impressionsId)
                 
-                //尋找牙模的醫生和牙技師
+                //尋找負責牙模的醫生
                 const r5 = await fetch(`${this.$root.$host}/api/impressions/${this.impressionsId}`,{
                     headers:{
                         "Authorization":this.token
@@ -209,7 +210,7 @@ export default{
                 this.isClosed = data5.isClosed
                 const dentist = data5.dentistName
                 
-
+                //尋找負責牙模的牙技師
                 const r6 = await fetch(`${this.$root.$host}/api/impressions/${this.impressionsId}/transferRecords`,{
                     headers:{
                         "Authorization":this.token
@@ -219,7 +220,7 @@ export default{
                 const transactorName = data6[0].transactorName
                 console.log(data6)
 
-               
+            
                 // 結案
                 const r4 = await fetch (`${this.$root.$host}/api/impressions/${this.impressionsId}/close`,{
                     method: "PUT",
@@ -244,9 +245,6 @@ export default{
                 console.log("dentist:",dentist)
                 console.log("transactorName:",transactorName)
 
-
-
-
                 // const r7 = await fetch(`${this.$root.$host}/api/users/me`,{
                 //     headers:{
                 //         "Authorization": this.token
@@ -268,6 +266,7 @@ export default{
                 console.log(matchDentist)    
                 console.log(dentistId)
 
+                
                 const r9 = await fetch(`${this.$root.$host}/api/users?role=dental_technician`,{
                     headers:{
                         "Authorization":this.token
@@ -280,43 +279,59 @@ export default{
                 console.log(matchDental_technician)
                 console.log(dental_technicianId)
 
-                const r10 = await fetch(`${this.$root.$host}/api/notifications`,{
-                    method:"POST",
-                    headers:{
-                        "Content-Type":"application/json",
-                        "Authorization":this.token
-                    },
-                    body:JSON.stringify({
-                        "receiverId":dentistId,
-                        "message":`回饋表單網址:http://localhost:8080/#/form/${this.impressionsId}`
-                    })
-                })
-                console.log(r10.status)
+                //發送表單連結給醫生
+                // const r10 = await fetch(`${this.$root.$host}/api/notifications`,{
+                //     method:"POST",
+                //     headers:{
+                //         "Content-Type":"application/json",
+                //         "Authorization":this.token
+                //     },
+                //     body:JSON.stringify({
+                //         "receiverId":dentistId,
+                //         "message":`回饋表單網址:http://localhost:8080/#/form/${this.impressionsId}`
+                //     })
+                // })
+                // console.log(r10.status)
 
-                const r11 = await fetch(`${this.$root.$host}/api/notifications`,{
-                    method:"POST",
+                //發生表單給牙技師
+                // const r11 = await fetch(`${this.$root.$host}/api/notifications`,{
+                //     method:"POST",
+                //     headers:{
+                //         "Content-Type": "application/json",
+                //         "Authorization":this.token
+                //     },
+                //     body: JSON.stringify({
+                //         "receiverId":dental_technicianId,
+                //         "message":`回饋表單網址:${this.$root.$host}/#/form/${this.impressionsId}`
+                //     })
+                // })
+                // console.log(r11.status)
+
+                //創建表單
+                const r12 = await fetch(`${this.$root.$host}/api/feedbacks`,{
+                    method: "POST",
                     headers:{
                         "Content-Type": "application/json",
                         "Authorization":this.token
                     },
                     body: JSON.stringify({
-                        "receiverId":dental_technicianId,
-                        "message":`回饋表單網址:${this.$root.$host}/#/form/${this.impressionsId}`
-                    })
-                })
-                console.log(r11.status)
-
-                const r12 = await fetch(`${this.$root.$host}/api/feedbacks`,{
-                    headers:{
-                        "Content-Type":"application/json",
-                        "Authorization":this.token
-                    },
-                    body: JSON.stringify({
-                        "impressionId":this.impressionId
+                        "impressionId":this.id2
                     })
                 })
                 console.log("create a feedback r12:",r12.status)
-            }
+                console.log(this.id2)
+
+                //取得feedbacks的id
+                const r13 = await fetch(`${this.$root.$host}/api/feedbacks?impressionId=${this.id2}`,{
+                    headers:{
+                        "Authorization":this.token
+                    }
+                })
+                const data13 = await r13.json();
+                console.log(data13)
+                this.feedbackId = data13[0].id
+                console.log(this.feedbackId)
+                }
     }
     },
 

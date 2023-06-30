@@ -142,7 +142,7 @@ export default {
         Swal.fire("需填寫資訊");
         }else{
         if (!/^(?=.*[a-zA-Z])(?=.*[0-9]).{8,}$/.test(this.password)) {
-        Swal.fire("密碼格式不對<br>密碼格式需有中英字母且位數至少為6");
+        Swal.fire("密碼格式不對<br>密碼需有英文字母和數字,且位數至少為6");
         return;
         }
         const { value: confirmed } = await Swal.fire({

@@ -80,7 +80,7 @@
                             <template v-if ="item.isClosed">
                                 <router-link :to="{
                                     name:'FormView',
-                                    params:{id:formId},
+                                    params:{id:formIdMap[item.id]},
                                 }">
                                 連結
                                 </router-link>
@@ -118,7 +118,7 @@ export default{
                 ntagUid:''
             },
             formId:"",
-            formIds:[]
+            formIdMap:{}
         };
     },
     mounted() {
@@ -135,10 +135,19 @@ export default{
     this.$root.$refreshT();
     },
     methods:{
-        handleCheckboxChange(id){
+        async handleCheckboxChange(id){
             if(this.checkedItems.includes(id)){
-                for(const id of this.checkedItems){
-                    console.log(id)
+                for(const itemid of this.checkedItems){
+                    console.log('id:',itemid)
+                    const r = await fetch(`${this.$root.$host}/api/feedbacks?impressionId=${itemid}`,{
+                        headers:{
+                            "Authorization":this.token
+                        }
+                    });
+                    const data = await r.json()
+                    console.log(data)
+                    console.log(r.status)
+                    console.log(data[0].id)
                 }
             }
         },
@@ -165,22 +174,6 @@ export default{
                     Swal.fire("查無資料")
                 }
                 this.items = text3;
-                
-                for(let i = 0 ; i<this.items.length; i++){
-                    const item = this.items[i]
-                    console.log(item)
-                    console.log(item.id)
-                    const r4 = await fetch(`${this.$root.$host}/api/feedbacks?impressionId=${item.id}`,{
-                        headers:{
-                            "Authorization":this.token
-                        }
-                     });
-                    const data = await r4.json()
-                    const formId = data[i].id;
-                    console.log(formId);
-                    console.log(r4.status)
-                    console.log(data)
-                }
             }
             break;
             case "交件日期":{
@@ -239,31 +232,24 @@ export default{
                     Swal.fire("查無資料")
                 }
                 this.items = text3;
-                for(let i = 0 ; i<this.items.length; i++){
-                        const item = this.items[i]
-                        console.log(item)
-                        console.log("item.id:",item.id)
-                        const formIdMap=[]
-                        const promises = this.items.map(async(item)=>{
-                            const r4 = await fetch(`${this.$root.$host}/api/feedbacks?impressionId=${item.id}`,{
-                                headers:{
-                                    "Authorization":this.token
-                                }
-                            });
-                            const data = await r4.json()
-                            if (data.length > 0) {
-                                this.formId = data[0].id;
-                                formIdMap[item.id] = this.formId;
-                            } 
-                            console.log(this.formId);
-                            console.log(r4.status)
-                            console.log(data)
-                            console.log(i)
-                            });
-                        await Promise.all(promises)
-                        
-                        console.log(formIdMap);
-                    }
+                const formIdMap = [];
+                for(const item of this.items){
+                    console.log(item)
+                    console.log("item.id:",item.id)
+                    const r4 = await fetch(`${this.$root.$host}/api/feedbacks?impressionId=${item.id}`,{
+                        headers:{
+                            "Authorization": this.token
+                        }
+                    });
+                    const data = await r4.json();
+                    const formId = data.length >0 ?data[0].id : null;
+                    this.$set(this.formIdMap, item.id , formId);
+                    
+                    console.log(formId)
+                    console.log(r4.status)
+                    console.log(data)
+                }
+                console.log(formIdMap)
             }
             break;
             case "回診日期":{
@@ -340,6 +326,7 @@ export default{
         }
         }
     },
+    
     async delete_model(){
         if(this.checkedItems.length===0){
             await Swal.fire({
@@ -358,7 +345,6 @@ export default{
             }).then(async(result)=>{
                 if (result.isConfirmed){
                     for (const id of this.checkedItems){
-                        try{
                             const r = await fetch (`${this.$root.$host}/api/impressions/${id}`,{
                                 method:"DELETE",                        
                                 headers:{
@@ -366,28 +352,22 @@ export default{
                                     "Authorization":this.token
                                 }
                             });
-                            const text = await r.json();
-                            console.log(text)
                             console.log(r.status)
-
-                            Swal.fire(
-                               '刪除成功!',
-                               '你的紀錄已被刪除.',
-                               'success'
-                            )
-                        }catch(error){
-                            console.error(error);
-                        }
+                            if(r.status == 204){
+                                Swal.fire('刪除成功!')
+                            }else if(r.status == 404){
+                                Swal.fire('資料已刪除')
+                            }else if (r.status == 403){
+                                Swal.fire('權限不足，刪除失敗')    
+                            }else{
+                                Swal.fire('刪除失敗')
+                            }
                     }
                 }else{
                     Swal.fire('取消刪除')
                 }
             })
-
-            
         }
-        
-
     }
   }
 }
@@ -463,9 +443,9 @@ export default{
         top: 4px;
     }
     input[type="checkbox"]{
-        -webkit-appearance: none;
         height: 40px;
         width: 40px;
+        margin-left: 20px;
         background-color: #d5d5d5;
         border-radius: 5px;
         cursor: pointer;
@@ -473,9 +453,7 @@ export default{
         justify-content: center;
     }
     input[type="checkbox"]:after{
-        font-family: "Font Awesome 5 Free";
         font-weight: 900;
-        content: "\f00c";
         font-size: 32px;
         display: none;
     }

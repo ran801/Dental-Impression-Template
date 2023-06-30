@@ -49,38 +49,6 @@
                         <input type ="checkbox" :id="issue" v-model="processIssue[index]"  :value="issue">
                         <label :for="issue">{{issue}}</label>
                     </div>
-                    <!-- <div>
-                        <input type="checkbox"   id="problem1" v-model="processIssue" value="無" :checked="processIssue.includes('無')">
-                        <label for="problem1">無</label>
-                    </div>
-                    <div>
-                        <input type="checkbox"   id="problem2" v-model="processIssue" value="模型已送回架上，但是醫師不知道" :checked="processIssue.includes('模型已送回架上，但是醫師不知道')">
-                        <label for="problem2" style="font-size: 22pt;">模型已送回，但醫師未得知</label>
-                    </div>
-                    <div>
-                        <input type="checkbox"   id="problem3" v-model="processIssue" value="送錯院區" :checked="processIssue.includes('送錯院區')">
-                        <label for="problem3">送錯院區</label>
-                    </div>
-                                        <div>
-                        <input type="checkbox"   id="problem4" v-model="processIssue" value="模型或是配件遺失" :checked="processIssue.includes('模型或是配件遺失')">
-                        <label for="problem4">模型或是配件遺失</label>
-                    </div>
-                                        <div>
-                        <input type="checkbox"   id="problem5" v-model="processIssue" value="未照指⽰單製作" :checked="processIssue.includes('未照指示單製作')"> 
-                        <label for="problem5">未照指⽰單製作</label>
-                    </div>
-                                        <div>
-                        <input type="checkbox"   id="problem6" v-model="processIssue" value="技師比較晚開始製作" :checked="processIssue.includes('技師比較晚開始製作')">
-                        <label for="problem6">技師比較晚開始製作</label>
-                    </div>
-                                        <div>
-                        <input type="checkbox"   id="problem7" v-model="processIssue" value="程式出現問題沒有收到訊息" :checked="processIssue.includes('程式出現問題沒有收到訊息')">
-                        <label for="problem7">程式出錯沒有收到訊息</label>
-                    </div>
-                                        <div>
-                        <input type="checkbox"   id="problem8" v-model="processIssue" value=" 其他" :checked="processIssue.includes('其他')">
-                        <label for="problem8"> 其他</label>
-                    </div> -->
                 </td>
             </tr>     
         </table>
@@ -162,18 +130,15 @@ export default ({
         },
         
         async submit(){
-            const processIssue = this.processIssue.join(',')
+            const selectIssues = this.processIssues.filter((issue, index) => this.processIssue[index]);
+            const processIssue = selectIssues.join(',')
             console.log("自然牙:[",this.toothNumber1,"],植牙:[", this.toothNumber2,"]")
             console.log("Material:",this.selectedMaterial)
             console.log("expectedDeliveryDate:",this.expectedDeliveryDate)
             console.log("actualDeliveryDate:",this.actualDeliveryDate)
-            console.log("processIssue:",this.processIssue.join(','))
+            console.log("processIssue:", processIssue)
             const r = await fetch(`${this.$root.$host}/api/feedbacks/${this.formId}`,{
                 method:"PATCH",
-                // headers:{
-                //     "Content-Type":"application/json",
-                //     "Authorization":this.token
-                // },
                 body:JSON.stringify({
                     "toothNumbers":`自然牙:[${this.toothNumber1}] 植牙:[${this.toothNumber2}]`,
                     "material":this.selectedMaterial,

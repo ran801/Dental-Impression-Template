@@ -13,19 +13,19 @@
             <tr>
                 <td>模型牙位:自然牙</td>
                 <td>
-                    <input type="text" style ="width:250px ; height:40px;margin-left:10px;border-style:outset;" v-model="toothNumber1"/>
+                    <input type="text" class="toothNumber" v-model="toothNumber1"/>
                 </td>
             </tr>
             <tr>
                 <td>模型牙位:植牙</td>
                 <td>
-                    <input type="text" style ="width:250px ; height:40px;margin-left:10px;border-style:outset;" v-model="toothNumber2"/>
+                    <input type="text" class="toothNumber" v-model="toothNumber2"/>
                 </td>
             </tr>
             <tr>
                 <td>材質</td>
                 <td>
-                    <select class="select" style="width:150px ; height:80px;margin-left:10px;margin-top:10px;margin-bottom:10px;border-style:outset" id="material" v-model="selectedMaterial">
+                    <select  class="material" id="material" v-model="selectedMaterial">
                         <option v-for="(material, index) in materials" :value="material" :key="index">{{material}}</option> 
                     </select>
                 </td>
@@ -52,8 +52,8 @@
                 </td>
             </tr>     
         </table>
-        <div class="div1">
-            <form style="position: relative;left: 1000px;top: 1050px;">
+        <div>
+            <form class="submitDiv">
                 <input type="button" value="送出回饋" class="btn3" @click="submit()">
             </form>        
         </div>
@@ -161,10 +161,13 @@ export default ({
 
 <style scoped>
     .table{
-        position: absolute;left: 100px;top: 200px;
+        position: absolute;
+        left: 100px;
+        top: 200px;
         width: 800px;
         font-size: 32px;
-        table-layout:fixed;word-break:break-all;
+        table-layout:fixed;
+        word-break:break-all;
     }
     .table td{
         border: solid;
@@ -177,37 +180,72 @@ export default ({
         border-radius:15px;
         font-size: 18px;
         outline:none;
+        font-weight:bold
       }
     .btn3:active{
         background-color:#6eb38d;
       }
-    .btn4{
-        width: 120px;
-        height: 40px;
-        background-color:#7dc49d;
-        border: none;
-        border-radius:15px;
-        font-size: 18px;
-        outline:none;
-        margin-left: 30px;
-      }
-    .btn4:active{
-        background-color:#6eb38d;
-      }
-    .txt{
-        width: 250px;
-        font-size: 18px;
-        margin: 10px;
-        margin-left: 0px;
-        border-style:solid;
-      }
-    .div1{
-        width: 600px;
-      }
+    .submitDiv{
+        position: absolute;
+        left: 950px;
+        top:1250px;
+    }
     .date{
         margin-top:10px; 
         margin-bottom:10px;
         margin-left:10px;
         border-style:outset
+    }
+    .toothNumber{
+        width:250px;
+        height:40px;
+        margin-left:10px;
+        border-style:outset
+    }
+    .material{
+        width:150px ; 
+        height:80px;
+        margin-left:10px;
+        margin-top:10px;
+        margin-bottom:10px;
+        border-style:outset
+    }
+    @media screen and (max-width: 800px) {
+        .table{
+            position:absolute;
+            left:0px;
+            top:0px;
+            width:100%;
+            max-width:800px;
+            font-size:20px;
+            table-layout: fixed;
+            word-break: break-all;
+        }
+        .toothNumber{
+            width:150px;
+            height:40px;
+            margin-left:10px;
+            border-style:outset
+        }
+        .date{
+            width:150px;
+            margin-top:10px; 
+            margin-bottom:10px;
+            margin-left:10px;
+            border-style:outset
+        }
+        .material{
+            width:150px ; 
+            height:40px;
+            margin-left:10px;
+            margin-top:10px;
+            margin-bottom:10px;
+            border-style:outset
+        }
+        .submitDiv{
+            position: relative;
+            left: 10px;
+            top:980px;
+        }                
     }
 </style>

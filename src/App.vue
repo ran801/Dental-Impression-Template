@@ -160,6 +160,12 @@ nav a:nth-child(6):hover ~ .animation {
 nav a.router-link-exact-active {
   color: #42b983;
 }
+@media screen and (max-width: 800px) {
+  nav {
+    display: none;
+  }
+}
+
 </style>
 
 <head>

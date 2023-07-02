@@ -12,6 +12,7 @@
                     <option value="6">素瓷</option>
                     <option value="7">排牙</option>
                     <option value="8">金屬支架</option>
+                    <option value="9">收模</option>
                 </select>
             </span>
         </div>
